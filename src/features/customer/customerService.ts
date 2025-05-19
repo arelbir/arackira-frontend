@@ -9,6 +9,7 @@ export interface Customer {
   email: string;
   phone: string;
   address: string;
+  active: boolean;
 }
 
 export async function getAllCustomers(): Promise<Customer[]> {

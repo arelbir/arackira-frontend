@@ -43,7 +43,12 @@ export function useCustomer(): UseCustomerResult {
     setError(null);
     try {
       const data = await getAllCustomers();
-      setCustomers(data);
+      // Her müşteri objesine active alanı ekle (varsayılanı true)
+      const normalized = data.map((c) => ({
+        ...c,
+        active: typeof c.active === 'boolean' ? c.active : true,
+      }));
+      setCustomers(normalized);
     } catch (e: any) {
       setError(e.message || 'Müşteriler alınamadı');
     } finally {

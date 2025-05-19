@@ -38,7 +38,7 @@ const CustomersPage = () => {
   useEffect(() => {
     if (customers.length > 0) {
       setCustomerStates(
-        customers.reduce((acc, c) => ({ ...acc, [c.id]: c.active }), {})
+        customers.reduce((acc, c) => ({ ...acc, [c.id]: !!c.active }), {})
       );
     }
   }, [customers]);

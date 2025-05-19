@@ -6,7 +6,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { ThemeSelector } from '@/components/theme-selector';
 import { useThemeConfig } from '@/components/active-theme';
 
-export default function SignInViewPage() {
+type SignInViewPageProps = {
+  stars?: number;
+};
+
+export default function SignInViewPage({ stars }: SignInViewPageProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
