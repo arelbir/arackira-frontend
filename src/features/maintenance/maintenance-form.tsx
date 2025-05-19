@@ -25,6 +25,8 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
       notes: ''
     }
   });
+  // useVehicle hook'u en üstte çağırılıyor
+  const { vehicles, loading: vehiclesLoading, error: vehiclesError } = useVehicle();
 
   React.useEffect(() => {
     if (initialData) {
@@ -75,21 +77,15 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
       <div className='flex flex-col gap-1'>
         <label className='text-foreground font-semibold'>Araç</label>
         {/** Araçlar select'i */}
-        {(() => {
-          const { vehicles, loading, error } = useVehicle();
-          if (loading)
-            return (
-              <div className='text-muted-foreground text-xs'>
-                Araçlar yükleniyor...
-              </div>
-            );
-          if (error)
-            return (
-              <div className='text-xs text-red-600'>
-                Araçlar alınamadı: {error}
-              </div>
-            );
-          return (
+        {vehiclesLoading ? (
+            <div className='text-muted-foreground text-xs'>
+              Araçlar yükleniyor...
+            </div>
+          ) : vehiclesError ? (
+            <div className='text-xs text-red-600'>
+              Araçlar alınamadı: {vehiclesError}
+            </div>
+          ) : (
             <select
               {...form.register('vehicle_id', { valueAsNumber: true })}
               className='border-border focus:ring-primary bg-muted text-foreground w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none'
@@ -101,8 +97,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
                 </option>
               ))}
             </select>
-          );
-        })()}
+          )}
         {form.formState.errors.vehicle_id && (
           <span className='text-xs text-red-600'>
             {form.formState.errors.vehicle_id.message}
