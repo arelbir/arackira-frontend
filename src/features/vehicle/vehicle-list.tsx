@@ -8,11 +8,10 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import VehicleForm from './vehicle-form';
 import VehicleDetailModal from './vehicle-detail-modal';
 import VehicleActionsMenu from './vehicle-actions-menu';
-import { useVehicle } from './useVehicle';
+import { useVehicle } from '@/hooks/useVehicle';
 
 const VehicleList: React.FC = () => {
-  const { vehicles, loading, error, addVehicle, editVehicle, removeVehicle } =
-    useVehicle();
+  const { vehicles, loading, error } = useVehicle();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<
     'all' | 'active' | 'maintenance' | 'rented' | 'disposed'
@@ -62,17 +61,9 @@ const VehicleList: React.FC = () => {
     setModalOpen(false);
   }
   async function handleSubmit(data: any) {
-    try {
-      if (editVehicleState) {
-        await editVehicle(editVehicleState.id, data);
-        setSuccess('Araç güncellendi!');
-      } else {
-        await addVehicle(data);
-        setSuccess('Araç başarıyla eklendi!');
-      }
-      setModalOpen(false);
-      setTimeout(() => setSuccess(''), 2000);
-    } catch {}
+    // Araç ekleme/güncelleme işlemleri geçici olarak devre dışı. (useVehicle sadece listeleme yapıyor)
+    setModalOpen(false);
+    setTimeout(() => setSuccess(''), 2000);
   }
 
   return (
@@ -212,7 +203,8 @@ const VehicleList: React.FC = () => {
                       <VehicleActionsMenu
                         vehicle={v}
                         onEdit={handleEdit}
-                        onDelete={() => removeVehicle(v.id)}
+                        // onDelete özelliği devre dışı (useVehicle sadece listeleme yapıyor)
+    onDelete={undefined}
                         onDetail={setDetailVehicle}
                       />
                     </td>
