@@ -1,93 +1,88 @@
 'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useSearchParams } from 'next/navigation';
-import { useTransition } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import * as z from 'zod';
-import GithubSignInButton from './github-auth-button';
-
-const formSchema = z.object({
-  email: z.string().email({ message: 'Enter a valid email address' })
-});
-
-type UserFormValue = z.infer<typeof formSchema>;
 
 export default function UserAuthForm() {
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl');
-  const [loading, startTransition] = useTransition();
-  const defaultValues = {
-    email: 'demo@gmail.com'
-  };
-  const form = useForm<UserFormValue>({
-    resolver: zodResolver(formSchema),
-    defaultValues
-  });
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
-  const onSubmit = async (data: UserFormValue) => {
-    startTransition(() => {
-      console.log('continue with email clicked');
-      toast.success('Signed In Successfully!');
-    });
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000';
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE}/api/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+        credentials: 'include' // Cookie'nin tarayıcıya yazılması için
+      });
+      const data = await res.json();
+      console.log('Login response:', res, data); // <-- Debug için eklendi
+      if (res.ok && data.user) {
+        router.push('/dashboard');
+      } else {
+        setError(data.error || data.message || 'Giriş başarısız.');
+      }
+    } catch (err) {
+      console.error('Login error:', err); // <-- Debug için eklendi
+      setError('Sunucuya bağlanılamadı.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className='w-full space-y-2'
-        >
-          <FormField
-            control={form.control}
-            name='email'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type='email'
-                    placeholder='Enter your email...'
-                    disabled={loading}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button
-            disabled={loading}
-            className='mt-2 ml-auto w-full'
-            type='submit'
+    <div className='flex min-h-screen flex-col items-center justify-center bg-gray-100 dark:bg-gray-900'>
+      <form
+        onSubmit={handleLogin}
+        className='mb-4 w-full max-w-sm rounded bg-white px-8 pt-6 pb-8 shadow-md dark:bg-zinc-800'
+      >
+        <h2 className='mb-6 text-center text-2xl font-bold'>Giriş Yap</h2>
+        <div className='mb-4'>
+          <label
+            className='mb-2 block text-sm font-bold text-gray-700 dark:text-gray-200'
+            htmlFor='username'
           >
-            Continue With Email
+            Kullanıcı Adı
+          </label>
+          <input
+            id='username'
+            type='text'
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            className='focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none dark:text-gray-900'
+          />
+        </div>
+        <div className='mb-6'>
+          <label
+            className='mb-2 block text-sm font-bold text-gray-700 dark:text-gray-200'
+            htmlFor='password'
+          >
+            Şifre
+          </label>
+          <input
+            id='password'
+            type='password'
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className='focus:shadow-outline mb-3 w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none dark:text-gray-900'
+          />
+        </div>
+        {error && <p className='mb-4 text-xs text-red-500 italic'>{error}</p>}
+        <div className='flex items-center justify-between'>
+          <Button type='submit' disabled={loading} className='w-full'>
+            {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
           </Button>
-        </form>
-      </Form>
-      <div className='relative'>
-        <div className='absolute inset-0 flex items-center'>
-          <span className='w-full border-t' />
         </div>
-        <div className='relative flex justify-center text-xs uppercase'>
-          <span className='bg-background text-muted-foreground px-2'>
-            Or continue with
-          </span>
-        </div>
-      </div>
-      <GithubSignInButton />
-    </>
+      </form>
+    </div>
   );
 }

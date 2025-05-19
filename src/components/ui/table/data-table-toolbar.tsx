@@ -49,14 +49,14 @@ export function DataTableToolbar<TData>({
         ))}
         {isFiltered && (
           <Button
-            aria-label='Reset filters'
+            aria-label='Filtreleri sıfırla'
             variant='outline'
             size='sm'
             className='border-dashed'
             onClick={onReset}
           >
             <Cross2Icon />
-            Reset
+            Sıfırla
           </Button>
         )}
       </div>

@@ -19,44 +19,56 @@ export const navItems: NavItem[] = [
     icon: 'dashboard',
     isActive: false,
     shortcut: ['d', 'd'],
-    items: [] // Empty array as there are no child items for Dashboard
+    items: []
   },
   {
-    title: 'Product',
-    url: '/dashboard/product',
-    icon: 'product',
-    shortcut: ['p', 'p'],
+    title: 'Sözleşmeler',
+    url: '/dashboard/contracts',
+    icon: 'post',
     isActive: false,
-    items: [] // No child items
+    items: []
+  },
+  {
+    title: 'Müşteriler',
+    url: '/dashboard/customers',
+    icon: 'user',
+    isActive: false,
+    items: []
+  },
+  {
+    title: 'Bakım',
+    url: '/dashboard/maintenance',
+    icon: 'settings', // wrench yok, settings mevcut ve uygun
+    isActive: false,
+    items: []
+  },
+  {
+    title: 'Kiralama',
+    url: '/dashboard/rental',
+    icon: 'page', // 'calendar' yok, 'page' kullanıldı
+    isActive: false,
+    items: []
+  },
+  {
+    title: 'Elden Çıkarma',
+    url: '/dashboard/disposal',
+    icon: 'trash',
+    isActive: false,
+    items: []
   },
   {
     title: 'Account',
-    url: '#', // Placeholder as there is no direct link for the parent
+    url: '#',
     icon: 'billing',
     isActive: true,
-
     items: [
       {
         title: 'Profile',
         url: '/dashboard/profile',
         icon: 'userPen',
         shortcut: ['m', 'm']
-      },
-      {
-        title: 'Login',
-        shortcut: ['l', 'l'],
-        url: '/',
-        icon: 'login'
       }
     ]
-  },
-  {
-    title: 'Kanban',
-    url: '/dashboard/kanban',
-    icon: 'kanban',
-    shortcut: ['k', 'k'],
-    isActive: false,
-    items: [] // No child items
   }
 ];
 

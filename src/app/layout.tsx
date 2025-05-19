@@ -9,6 +9,7 @@ import NextTopLoader from 'nextjs-toploader';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import './globals.css';
 import './theme.css';
+import { ThemeColorMetaEffect } from './theme-color-meta-effect';
 
 const META_THEME_COLORS = {
   light: '#ffffff',
@@ -35,19 +36,7 @@ export default async function RootLayout({
 
   return (
     <html lang='en' suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                  document.querySelector('meta[name="theme-color"]').setAttribute('content', '${META_THEME_COLORS.dark}')
-                }
-              } catch (_) {}
-            `
-          }}
-        />
-      </head>
+      <head />
       <body
         className={cn(
           'bg-background overflow-hidden overscroll-none font-sans antialiased',
@@ -65,6 +54,7 @@ export default async function RootLayout({
             disableTransitionOnChange
             enableColorScheme
           >
+            <ThemeColorMetaEffect />
             <Providers activeThemeValue={activeThemeValue as string}>
               <Toaster />
               {children}

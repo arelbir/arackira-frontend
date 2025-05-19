@@ -29,8 +29,9 @@ import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { IconAlertTriangle, IconTrash } from '@tabler/icons-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
+import { updateProfile } from '@/services/profileService';
 
 interface ProfileFormType {
   initialData: any | null;
@@ -49,18 +50,35 @@ const ProfileCreateForm: React.FC<ProfileFormType> = ({ initialData }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData] = useState({});
 
-  const defaultValues = {
-    jobs: [
-      {
-        jobtitle: '',
-        employer: '',
-        startdate: '',
-        enddate: '',
-        jobcountry: '',
-        jobcity: ''
+  const defaultValues = initialData
+    ? {
+        ...initialData,
+        jobs:
+          initialData.jobs && initialData.jobs.length > 0
+            ? initialData.jobs
+            : [
+                {
+                  jobtitle: '',
+                  employer: '',
+                  startdate: '',
+                  enddate: '',
+                  jobcountry: '',
+                  jobcity: ''
+                }
+              ]
       }
-    ]
-  };
+    : {
+        jobs: [
+          {
+            jobtitle: '',
+            employer: '',
+            startdate: '',
+            enddate: '',
+            jobcountry: '',
+            jobcity: ''
+          }
+        ]
+      };
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -78,11 +96,18 @@ const ProfileCreateForm: React.FC<ProfileFormType> = ({ initialData }) => {
     name: 'jobs'
   });
 
-  const processForm: SubmitHandler<ProfileFormValues> = (data) => {
-    // Process form data
-    setData(data);
-    // api call and reset
-    // form.reset();
+  const processForm: SubmitHandler<ProfileFormValues> = async (data) => {
+    setLoading(true);
+    try {
+      await updateProfile(data);
+      setData(data);
+      alert('Profil başarıyla güncellendi!');
+      // İstenirse burada router.refresh() veya başka bir işlem yapılabilir
+    } catch (e: any) {
+      alert(e.message || 'Profil güncellenemedi.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   type FieldName = keyof ProfileFormValues;
