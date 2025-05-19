@@ -37,6 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Sadece ilk mount'ta kullanıcıyı kontrol et
   useEffect(() => {
     refreshUser();
     // eslint-disable-next-line
@@ -58,8 +59,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     setError(null);
     try {
-      const loggedIn = await login(username, password);
-      setUser(loggedIn);
+      await login(username, password);
+      await refreshUser(); // login sonrası kullanıcıyı tekrar yükle
     } catch (e: any) {
       setError(e.message);
       setUser(null);
@@ -76,8 +77,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     setError(null);
     try {
-      const registered = await register(username, password, role);
-      setUser(registered);
+      await register(username, password, role);
+      await refreshUser(); // register sonrası kullanıcıyı tekrar yükle
     } catch (e: any) {
       setError(e.message);
       setUser(null);

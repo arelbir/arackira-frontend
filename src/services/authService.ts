@@ -20,7 +20,10 @@ export async function login(
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Giriş başarısız.');
-  return data;
+  if (data.token) {
+    localStorage.setItem('token', data.token);
+  }
+  return data.user;
 }
 
 export async function register(
@@ -36,7 +39,10 @@ export async function register(
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Kayıt başarısız.');
-  return data;
+  if (data.token) {
+    localStorage.setItem('token', data.token);
+  }
+  return data.user;
 }
 
 export async function logout(): Promise<void> {
@@ -47,8 +53,13 @@ export async function logout(): Promise<void> {
 }
 
 export async function getMe(): Promise<AuthUser | null> {
+  // Önce localStorage'da token varsa header ile gönder
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(`${API_BASE}/me`, {
     method: 'GET',
+    headers,
     credentials: 'include'
   });
   if (res.status === 401) return null;
