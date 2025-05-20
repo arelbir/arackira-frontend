@@ -12,10 +12,9 @@ export async function login(
   username: string,
   password: string
 ): Promise<AuthUser> {
-  const res = await fetch(`${API_BASE}/login`, {
+  const res = await apiFetch(`${API_BASE}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify({ username, password })
   });
   const data = await res.json();
@@ -31,11 +30,10 @@ export async function register(
   password: string,
   role?: string
 ): Promise<AuthUser> {
-  const res = await fetch(`${API_BASE}/register`, {
+  const res = await apiFetch(`${API_BASE}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password, role }),
-    credentials: 'include'
+    body: JSON.stringify({ username, password, role })
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Kayıt başarısız.');
@@ -46,22 +44,16 @@ export async function register(
 }
 
 export async function logout(): Promise<void> {
-  await fetch(`${API_BASE}/logout`, {
-    method: 'POST',
-    credentials: 'include'
+  await apiFetch(`${API_BASE}/logout`, {
+    method: 'POST'
   });
+  localStorage.removeItem('token');
 }
 
+import { apiFetch } from './api';
+
 export async function getMe(): Promise<AuthUser | null> {
-  // Önce localStorage'da token varsa header ile gönder
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const headers: Record<string, string> = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(`${API_BASE}/me`, {
-    method: 'GET',
-    headers,
-    credentials: 'include'
-  });
+  const res = await apiFetch(`${API_BASE}/me`);
   if (res.status === 401) return null;
   const data = await res.json();
   if (!res.ok) return null;

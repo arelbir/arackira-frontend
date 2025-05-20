@@ -1,6 +1,7 @@
 // Kiralama işlemleri için service fonksiyonları (maintenanceService örnek alınarak)
 import { RentalFormValues } from './rental-schema';
 
+import { apiFetch } from '@/services/api';
 const API_URL = `${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000'}/api/rentals`;
 
 export interface RentalRecord {
@@ -16,7 +17,7 @@ export interface RentalRecord {
 }
 
 export async function getAllRentals(): Promise<RentalRecord[]> {
-  const res = await fetch(API_URL, { credentials: 'include' });
+  const res = await apiFetch(API_URL);
   if (!res.ok) throw new Error('Kiralama kayıtları alınamadı');
   const data = await res.json();
   // API'den dönen alanları frontend arayüzüne uygun şekilde map et
@@ -36,10 +37,9 @@ export async function getAllRentals(): Promise<RentalRecord[]> {
 export async function createRental(
   data: RentalFormValues
 ): Promise<RentalRecord> {
-  const res = await fetch(API_URL, {
+  const res = await apiFetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(data)
   });
   if (!res.ok) throw new Error('Kiralama kaydı eklenemedi');
@@ -50,10 +50,9 @@ export async function updateRental(
   id: number,
   data: RentalFormValues
 ): Promise<RentalRecord> {
-  const res = await fetch(`${API_URL}/${id}`, {
+  const res = await apiFetch(`${API_URL}/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(data)
   });
   if (!res.ok) throw new Error('Kiralama kaydı güncellenemedi');
@@ -61,9 +60,8 @@ export async function updateRental(
 }
 
 export async function deleteRental(id: number): Promise<void> {
-  const res = await fetch(`${API_URL}/${id}`, {
-    method: 'DELETE',
-    credentials: 'include'
+  const res = await apiFetch(`${API_URL}/${id}`, {
+    method: 'DELETE'
   });
   if (!res.ok) throw new Error('Kiralama kaydı silinemedi');
 }

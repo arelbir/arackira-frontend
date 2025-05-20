@@ -9,10 +9,11 @@ export interface DisposalRecord {
   created_at?: string;
 }
 
+import { apiFetch } from '@/services/api';
 const API_URL = `${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000'}/api/disposal`;
 
 export async function getAllDisposals(): Promise<DisposalRecord[]> {
-  const res = await fetch(API_URL, { credentials: 'include' });
+  const res = await apiFetch(API_URL);
   if (!res.ok) throw new Error('Elden çıkarma kayıtları alınamadı');
   const data = await res.json();
   return data.map((item: any) => ({
@@ -29,10 +30,9 @@ export async function getAllDisposals(): Promise<DisposalRecord[]> {
 export async function createDisposal(
   data: DisposalFormValues
 ): Promise<DisposalRecord> {
-  const res = await fetch(API_URL, {
+  const res = await apiFetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(data)
   });
   if (!res.ok) {
@@ -50,10 +50,9 @@ export async function updateDisposal(
   id: number,
   data: DisposalFormValues
 ): Promise<DisposalRecord> {
-  const res = await fetch(`${API_URL}/${id}`, {
+  const res = await apiFetch(`${API_URL}/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(data)
   });
   if (!res.ok) throw new Error('Elden çıkarma kaydı güncellenemedi');
@@ -61,9 +60,8 @@ export async function updateDisposal(
 }
 
 export async function deleteDisposal(id: number): Promise<void> {
-  const res = await fetch(`${API_URL}/${id}`, {
-    method: 'DELETE',
-    credentials: 'include'
+  const res = await apiFetch(`${API_URL}/${id}`, {
+    method: 'DELETE'
   });
   if (!res.ok) throw new Error('Elden çıkarma kaydı silinemedi');
 }

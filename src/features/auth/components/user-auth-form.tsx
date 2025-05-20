@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiFetch } from '@/services/api';
 import { Button } from '@/components/ui/button';
 
 export default function UserAuthForm() {
@@ -11,12 +12,13 @@ export default function UserAuthForm() {
   const router = useRouter();
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000';
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/api/users/login`, {
+      const res = await apiFetch(`${API_BASE}/api/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),

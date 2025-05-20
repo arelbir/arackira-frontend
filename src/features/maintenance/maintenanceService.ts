@@ -1,6 +1,7 @@
 // Bakım işlemleri için service fonksiyonları (contractService örnek alınarak)
 import { MaintenanceFormValues } from './maintenance-schema';
 
+import { apiFetch } from '@/services/api';
 const API_URL = `${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000'}/api/maintenance`;
 
 export interface MaintenanceRecord {
@@ -13,7 +14,7 @@ export interface MaintenanceRecord {
 }
 
 export async function getAllMaintenance(): Promise<MaintenanceRecord[]> {
-  const res = await fetch(API_URL, { credentials: 'include' });
+  const res = await apiFetch(API_URL);
   if (!res.ok) throw new Error('Bakım kayıtları alınamadı');
   return res.json();
 }
@@ -21,10 +22,9 @@ export async function getAllMaintenance(): Promise<MaintenanceRecord[]> {
 export async function createMaintenance(
   data: MaintenanceFormValues
 ): Promise<MaintenanceRecord> {
-  const res = await fetch(API_URL, {
+  const res = await apiFetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(data)
   });
   if (!res.ok) throw new Error('Bakım kaydı eklenemedi');
@@ -35,10 +35,9 @@ export async function updateMaintenance(
   id: number,
   data: MaintenanceFormValues
 ): Promise<MaintenanceRecord> {
-  const res = await fetch(`${API_URL}/${id}`, {
+  const res = await apiFetch(`${API_URL}/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(data)
   });
   if (!res.ok) throw new Error('Bakım kaydı güncellenemedi');
@@ -48,9 +47,8 @@ export async function updateMaintenance(
 export async function deleteMaintenance(
   id: number
 ): Promise<{ success: boolean }> {
-  const res = await fetch(`${API_URL}/${id}`, {
-    method: 'DELETE',
-    credentials: 'include'
+  const res = await apiFetch(`${API_URL}/${id}`, {
+    method: 'DELETE'
   });
   if (!res.ok) throw new Error('Bakım kaydı silinemedi');
   return res.json();

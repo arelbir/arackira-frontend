@@ -6,6 +6,7 @@ import React, {
   useState,
   ReactNode
 } from 'react';
+import { apiFetch } from '@/services/api';
 
 interface User {
   id: number;
@@ -28,13 +29,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000';
+
   const fetchUser = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/users/me`, {
-        credentials: 'include'
-      });
+      const res = await apiFetch(`${API_BASE}/api/users/me`);
       if (res.ok) {
         const data = await res.json();
         setUser(data);

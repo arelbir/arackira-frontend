@@ -3,11 +3,12 @@ import { ProfileFormValues } from '@/features/profile/utils/form-schema';
 
 const API_BASE = `${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000'}/api/users`;
 
+import { apiFetch } from '@/services/api';
+
 export async function updateProfile(data: ProfileFormValues) {
-  const res = await fetch(`${API_BASE}/me`, {
+  const res = await apiFetch(`${API_BASE}/me`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify(data)
   });
   const result = await res.json();
