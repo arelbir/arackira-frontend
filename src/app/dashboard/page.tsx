@@ -1,13 +1,11 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default async function Dashboard() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
-  console.log('SSR token:', token); // Debug log
-  if (!token) {
-    return redirect('/auth/sign-in');
-  } else {
-    redirect('/dashboard/overview');
-  }
+export default function DashboardRedirect() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/dashboard/overview');
+  }, [router]);
+  return null;
 }
