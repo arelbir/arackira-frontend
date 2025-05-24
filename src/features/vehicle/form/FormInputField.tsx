@@ -50,7 +50,7 @@ const FormInputField: React.FC<FormInputFieldProps> = ({
         id={name}
         name={name}
         type={type}
-        value={value}
+        value={value === undefined || value === null ? '' : value}
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}

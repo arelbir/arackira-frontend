@@ -18,6 +18,12 @@ export async function getAllModels() {
   return await res.json();
 }
 
+export async function getModelsByBrand(brandId: number) {
+  const res = await apiFetch(`${API_BASE}/api/models/by-brand/${brandId}`);
+  if (!res.ok) throw new Error('Model listesi alınamadı');
+  return await res.json();
+}
+
 export async function createModel(data: Omit<Model, 'id' | 'created_at'>) {
   const res = await apiFetch(`${API_BASE}/api/models`, {
     method: 'POST',

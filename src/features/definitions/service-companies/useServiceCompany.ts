@@ -1,3 +1,4 @@
+'use client';
 // Servis Şirketi işlemleri için custom hook
 import { useCallback, useEffect, useState } from 'react';
 import { getAllServiceCompanies, createServiceCompany, updateServiceCompany, deleteServiceCompany, ServiceCompany } from './serviceCompanyService';

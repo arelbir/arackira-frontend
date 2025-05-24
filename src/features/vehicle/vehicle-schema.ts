@@ -40,6 +40,8 @@ export const vehicleSchema = z.object({
     required_error: 'Geçerli müşteri firma ID zorunlu ve sayı olmalı',
     invalid_type_error: 'Geçerli müşteri firma ID zorunlu ve sayı olmalı'
   })
+  ,
+  vehicle_status_id: z.number({ required_error: 'Araç statüsü zorunlu' })
 });
 
 export type VehicleFormValues = z.infer<typeof vehicleSchema>;

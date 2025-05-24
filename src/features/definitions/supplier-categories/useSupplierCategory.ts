@@ -1,3 +1,4 @@
+'use client';
 // Tedarikçi Kategorisi işlemleri için custom hook
 import { useCallback, useEffect, useState } from 'react';
 import { getAllSupplierCategories, createSupplierCategory, updateSupplierCategory, deleteSupplierCategory, SupplierCategory } from './supplierCategoryService';

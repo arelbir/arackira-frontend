@@ -1,50 +1,56 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { Controller } from "react-hook-form";
 import FormInputField from "../form/FormInputField";
 import FormSelectField from "../form/FormSelectField";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Controller } from "react-hook-form";
-  
+import FormDateField from "../form/FormDateField";
+import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
+import {
+  useVehicleType,
+  useBrand,
+  useModelsByBrand,
+  usePackagesByModel,
+  useColor,
+  useFuelType,
+  useTransmission,
+  useBranch
+} from "@/features/definitions/hooks";
+import { useVehicleStatuses } from '@/features/definitions/vehicle-statuses/useVehicleStatuses';
+
 interface Props {
   form: any;
 }
 
-const durumlar = [
-  { value: "kiralik", label: "Kiralık" },
-  { value: "satis", label: "Satışta" },
-  { value: "havuz", label: "Havuz" },
-];
-
 const VehicleGeneralInfoTab: React.FC<Props> = ({ form }) => {
-  // Ortak select opsiyonları
-  const durumlar = [
-    { value: "kiralik", label: "Kiralık" },
-    { value: "satis", label: "Satışta" },
-    { value: "havuz", label: "Havuz" },
-  ];
-  const markaOpsiyon = [
-    { value: "1", label: "Renault" },
-    { value: "2", label: "Fiat" },
-    { value: "3", label: "Ford" },
-  ];
-  const modelOpsiyon = [
-    { value: "1", label: "Clio" },
-    { value: "2", label: "Egea" },
-    { value: "3", label: "Focus" },
-  ];
-  const yakitOpsiyon = [
-    { value: "1", label: "Benzin" },
-    { value: "2", label: "Dizel" },
-    { value: "3", label: "Elektrik" },
-  ];
-  const vitesOpsiyon = [
-    { value: "1", label: "Manuel" },
-    { value: "2", label: "Otomatik" },
-  ];
-  const renkOpsiyon = [
-    { value: "1", label: "Beyaz" },
-    { value: "2", label: "Gri" },
-    { value: "3", label: "Siyah" },
-  ];
+  const { token } = useAuth();
+
+  // --- Tanım hook'ları ---
+  const { vehicleTypes, fetchVehicleTypes, loading: loadingVehicleTypes } = useVehicleType(token);
+  const { brands, fetchBrands, loading: loadingBrands } = useBrand();
+  const { colors, fetchColors, loading: loadingColors } = useColor();
+  const { fuelTypes, fetchFuelTypes, loading: loadingFuelTypes } = useFuelType(token);
+  const { transmissions, fetchTransmissions, loading: loadingTransmissions } = useTransmission(token);
+  const { vehicleStatuses, loading: statusesLoading } = useVehicleStatuses();
+  const { branches, loading: loadingBranches } = useBranch();
+
+  // --- Seçili değerler ---
+  const selectedBrandId = Number(form.watch("brand_id")) || null;
+  const selectedModelId = Number(form.watch("model_id")) || null;
+  const { models, loading: loadingModels } = useModelsByBrand(selectedBrandId);
+  const { packages, loading: loadingPackages } = usePackagesByModel(selectedModelId);
+
+  // --- Options ---
+  const vehicleStatusOptions = (vehicleStatuses || []).map((s: { id: number; name: string }) => ({ label: s.name, value: s.id }));
+  const branchOptions = (branches || []).map((b: { id: number; name: string }) => ({ label: b.name, value: b.id }));
+
+  // --- İlk yüklemede tanım verilerini çek ---
+  useEffect(() => {
+    fetchVehicleTypes();
+    fetchBrands();
+    fetchColors();
+    fetchFuelTypes();
+    fetchTransmissions();
+  }, [fetchVehicleTypes, fetchBrands, fetchColors, fetchFuelTypes, fetchTransmissions]);
 
   return (
     <Card>
@@ -57,55 +63,117 @@ const VehicleGeneralInfoTab: React.FC<Props> = ({ form }) => {
               <span className="mx-1">/</span>
               <span>Temel Bilgiler</span>
             </nav>
-            <FormInputField
-              label="Şube"
+            {/* Şube seçimi */}
+            {/* Şube seçimi - Tamamen controlled */}
+            <Controller
+              control={form.control}
               name="branch_id"
-              value={form.watch("branch_id")}
-              onChange={form.handleChange}
-              error={form.formState.errors.branch_id}
-              placeholder="Şube ID"
+              render={({ field }) => (
+                <FormSelectField
+                  name={field.name}
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  label="Şube"
+                  error={form.formState.errors.branch_id}
+                  options={branchOptions}
+                  placeholder="Şube seçin"
+                  disabled={loadingBranches}
+                />
+              )}
             />
-            <FormInputField
-              label="Araç Plakası"
+            <Controller
+              control={form.control}
               name="plate_number"
-              value={form.watch("plate_number")}
-              onChange={form.handleChange}
-              error={form.formState.errors.plate_number}
-              placeholder="34 ABC 123"
+              render={({ field }) => (
+                <FormInputField
+                  {...field}
+                  label="Araç Plakası"
+                  error={form.formState.errors.plate_number}
+                  placeholder="34 ABC 123"
+                />
+              )}
             />
-            <FormSelectField
-              label="Durum"
-              name="status"
-              value={form.watch("status")}
-              onChange={form.handleChange}
-              options={durumlar}
-              error={form.formState.errors.status}
-              placeholder="Durum seçiniz"
-            />
-            <FormInputField
-              label="Şasi No"
+            <Controller
+  control={form.control}
+  name="vehicle_status_id"
+  render={({ field }) => (
+    <FormSelectField
+      label="Araç Statüsü"
+      name={field.name}
+      value={field.value || ''}
+      onChange={field.onChange}
+      options={vehicleStatusOptions}
+      error={form.formState.errors.vehicle_status_id}
+      placeholder={statusesLoading ? "Yükleniyor..." : "Seçiniz"}
+      disabled={statusesLoading}
+    />
+  )}
+/>
+            <Controller
+              control={form.control}
               name="chassis_number"
-              value={form.watch("chassis_number")}
-              onChange={form.handleChange}
-              error={form.formState.errors.chassis_number}
-              placeholder="Şasi numarası"
+              render={({ field }) => (
+                <FormInputField
+                  {...field}
+                  label="Şasi No"
+                  error={form.formState.errors.chassis_number}
+                  placeholder="Şasi numarası"
+                />
+              )}
             />
-            <FormInputField
-              label="Motor No"
+            <Controller
+              control={form.control}
               name="engine_number"
-              value={form.watch("engine_number")}
-              onChange={form.handleChange}
-              error={form.formState.errors.engine_number}
-              placeholder="Motor numarası"
+              render={({ field }) => (
+                <FormInputField
+                  {...field}
+                  label="Motor No"
+                  error={form.formState.errors.engine_number}
+                  placeholder="Motor numarası"
+                />
+              )}
             />
-            <FormInputField
-              label="Araç Tipi"
-              name="vehicle_type_id"
-              value={form.watch("vehicle_type_id")}
-              onChange={form.handleChange}
-              error={form.formState.errors.vehicle_type_id}
-              placeholder="Tip ID"
+            {/* İlk Tescil Tarihi */}
+            <Controller
+              control={form.control}
+              name="first_registration_date"
+              render={({ field }) => (
+                <FormDateField
+                  {...field}
+                  label="İlk Tescil Tarihi"
+                  error={form.formState.errors.first_registration_date}
+                  placeholder="Tescil tarihi"
+                />
+              )}
             />
+            {/* Ruhsat Belge Numarası */}
+            <Controller
+              control={form.control}
+              name="registration_document_number"
+              render={({ field }) => (
+                <FormInputField
+                  {...field}
+                  label="Ruhsat Belge Numarası"
+                  error={form.formState.errors.registration_document_number}
+                  placeholder="Belge numarası"
+                />
+              )}
+            />
+            {/* Araç KM */}
+            <Controller
+              control={form.control}
+              name="vehicle_km"
+              render={({ field }) => (
+                <FormInputField
+                  {...field}
+                  label="Araç KM"
+                  error={form.formState.errors.vehicle_km}
+                  placeholder="Kilometre"
+                  type="number"
+                />
+              )}
+            />
+
           </div>
           {/* Marka/Model/Donanım */}
           <div>
@@ -114,73 +182,114 @@ const VehicleGeneralInfoTab: React.FC<Props> = ({ form }) => {
               <span className="mx-1">/</span>
               <span>Marka / Model / Donanım</span>
             </nav>
-            <FormSelectField
-              label="Marka"
+            {/* Araç Tipi select için Controller */}
+            <Controller
+              control={form.control}
+              name="vehicle_type_id"
+              render={({ field }) => (
+                <FormSelectField
+                  {...field}
+                  label="Araç Tipi"
+                  options={vehicleTypes.map(vt => ({ value: String(vt.id), label: vt.name }))}
+                  error={form.formState.errors.vehicle_type_id}
+                  placeholder="Araç tipi seçiniz"
+                  disabled={loadingVehicleTypes}
+                />
+              )}
+            />
+            {/* Marka select için Controller */}
+            <Controller
+              control={form.control}
               name="brand_id"
-              value={form.watch("brand_id")}
-              onChange={form.handleChange}
-              options={markaOpsiyon}
-              error={form.formState.errors.brand_id}
-              placeholder="Marka seçiniz"
+              render={({ field }) => (
+                <FormSelectField
+                  {...field}
+                  label="Marka"
+                  options={brands.map(b => ({ value: String(b.id), label: b.name }))}
+                  error={form.formState.errors.brand_id}
+                  placeholder="Marka seçiniz"
+                  disabled={loadingBrands}
+                />
+              )}
             />
-            <FormSelectField
-              label="Model"
+            {/* Model select için Controller */}
+            <Controller
+              control={form.control}
               name="model_id"
-              value={form.watch("model_id")}
-              onChange={form.handleChange}
-              options={modelOpsiyon}
-              error={form.formState.errors.model_id}
-              placeholder="Model seçiniz"
+              render={({ field }) => (
+                <FormSelectField
+                  {...field}
+                  label="Model"
+                  options={models.map(m => ({ value: String(m.id), label: m.name }))}
+                  error={form.formState.errors.model_id}
+                  placeholder="Model seçiniz"
+                  disabled={loadingModels || !selectedBrandId}
+                />
+              )}
             />
-            <FormInputField
-              label="Versiyon"
-              name="version"
-              value={form.watch("version")}
-              onChange={form.handleChange}
-              error={form.formState.errors.version}
-              placeholder="1.6 Vision"
+
+            {/* Paket select için Controller */}
+            <Controller
+              control={form.control}
+              name="package_id"
+              render={({ field }) => (
+                <FormSelectField
+                  {...field}
+                  label="Paket"
+                  options={packages.map((pkg: { id: number; name: string }) => ({ value: String(pkg.id), label: pkg.name }))}
+                  error={form.formState.errors.package_id}
+                  placeholder="Paket seçiniz"
+                  disabled={loadingPackages || !selectedModelId}
+                />
+              )}
             />
-            <FormInputField
-              label="Paket"
-              name="package"
-              value={form.watch("package")}
-              onChange={form.handleChange}
-              error={form.formState.errors.package}
-              placeholder="Comfort"
-            />
-            <FormInputField
-              label="Araç Grubu"
+            {/* Araç Grubu - Controlled */}
+            <Controller
+              control={form.control}
               name="vehicle_group_id"
-              value={form.watch("vehicle_group_id")}
-              onChange={form.handleChange}
-              error={form.formState.errors.vehicle_group_id}
-              placeholder="Grup ID"
+              render={({ field }) => (
+                <FormInputField
+                  {...field}
+                  label="Araç Grubu"
+                  error={form.formState.errors.vehicle_group_id}
+                  placeholder="Grup ID"
+                />
+              )}
             />
-            <FormInputField
-              label="Kasa Tipi"
-              name="body_type"
-              value={form.watch("body_type")}
-              onChange={form.handleChange}
-              error={form.formState.errors.body_type}
-              placeholder="Sedan"
-            />
-            <FormSelectField
-              label="Yakıt Tipi"
+
+            {/* Yakıt Tipi - Controlled */}
+            <Controller
+              control={form.control}
               name="fuel_type_id"
-              value={form.watch("fuel_type_id")}
-              onChange={form.handleChange}
-              options={yakitOpsiyon}
-              error={form.formState.errors.fuel_type_id}
-              placeholder="Yakıt tipi seçiniz"
+              render={({ field }) => (
+                <FormSelectField
+                  name={field.name}
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  label="Yakıt Tipi"
+                  options={fuelTypes.map(f => ({ value: String(f.id), label: f.name }))}
+                  error={form.formState.errors.fuel_type_id}
+                  placeholder="Yakıt tipi seçiniz"
+                  disabled={loadingFuelTypes}
+                />
+              )}
             />
-            <FormSelectField
-              label="Vites Tipi"
+            {/* Vites Tipi - Controlled */}
+            <Controller
+              control={form.control}
               name="transmission_id"
-              value={form.watch("transmission_id")}
-              onChange={form.handleChange}
-              options={vitesOpsiyon}
-              error={form.formState.errors.transmission_id}
-              placeholder="Vites tipi seçiniz"
+              render={({ field }) => (
+                <FormSelectField
+                  name={field.name}
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  label="Vites Tipi"
+                  options={transmissions.map(t => ({ value: String(t.id), label: t.name }))}
+                  error={form.formState.errors.transmission_id}
+                  placeholder="Vites tipi seçiniz"
+                  disabled={loadingTransmissions}
+                />
+              )}
             />
           </div>
           {/* Teknik Bilgiler */}
@@ -190,41 +299,64 @@ const VehicleGeneralInfoTab: React.FC<Props> = ({ form }) => {
               <span className="mx-1">/</span>
               <span>Teknik Bilgiler</span>
             </nav>
-            <FormInputField
-              label="Model Yılı"
+            {/* Model Yılı - Controlled */}
+            <Controller
+              control={form.control}
               name="model_year"
-              value={form.watch("model_year")}
-              onChange={form.handleChange}
-              error={form.formState.errors.model_year}
-              placeholder="2022"
-              type="number"
+              render={({ field }) => (
+                <FormInputField
+                  {...field}
+                  label="Model Yılı"
+                  error={form.formState.errors.model_year}
+                  placeholder="2022"
+                  type="number"
+                />
+              )}
             />
-            <FormSelectField
-              label="Renk"
+            {/* Renk - Controlled */}
+            <Controller
+              control={form.control}
               name="color_id"
-              value={form.watch("color_id")}
-              onChange={form.handleChange}
-              options={renkOpsiyon}
-              error={form.formState.errors.color_id}
-              placeholder="Renk seçiniz"
+              render={({ field }) => (
+                <FormSelectField
+                  name={field.name}
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  label="Renk"
+                  options={colors.map(c => ({ value: String(c.id), label: c.name }))}
+                  error={form.formState.errors.color_id}
+                  placeholder="Renk seçiniz"
+                  disabled={loadingColors}
+                />
+              )}
             />
-            <FormInputField
-              label="Motor Gücü (HP)"
+            {/* Motor Gücü (HP) - Controlled */}
+            <Controller
+              control={form.control}
               name="engine_power_hp"
-              value={form.watch("engine_power_hp")}
-              onChange={form.handleChange}
-              error={form.formState.errors.engine_power_hp}
-              placeholder="132"
-              type="number"
+              render={({ field }) => (
+                <FormInputField
+                  {...field}
+                  label="Motor Gücü (HP)"
+                  error={form.formState.errors.engine_power_hp}
+                  placeholder="132"
+                  type="number"
+                />
+              )}
             />
-            <FormInputField
-              label="Motor Hacmi (cc)"
+            {/* Motor Hacmi (cc) - Controlled */}
+            <Controller
+              control={form.control}
               name="engine_volume_cc"
-              value={form.watch("engine_volume_cc")}
-              onChange={form.handleChange}
-              error={form.formState.errors.engine_volume_cc}
-              placeholder="1598"
-              type="number"
+              render={({ field }) => (
+                <FormInputField
+                  {...field}
+                  label="Motor Hacmi (cc)"
+                  error={form.formState.errors.engine_volume_cc}
+                  placeholder="1598"
+                  type="number"
+                />
+              )}
             />
           </div>
         </div>

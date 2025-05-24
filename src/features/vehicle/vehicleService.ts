@@ -20,6 +20,7 @@ export interface Vehicle {
   transmission_id: number;
   model_year: number;
   color_id: number;
+  vehicle_status_id: number;
   engine_power_hp?: number;
   engine_volume_cc?: number;
   chassis_number: string;
@@ -35,7 +36,6 @@ export interface Vehicle {
   exhaust_stamp_expiry_date?: string;
   acquisition_cost?: number;
   acquisition_date?: string;
-  current_status?: string;
   notes?: string;
   current_client_company_id?: number;
 }

@@ -28,7 +28,7 @@ const FormDateField: React.FC<FormDateFieldProps> = ({
       id={name}
       name={name}
       type="date"
-      value={value}
+      value={value === undefined || value === null ? '' : value}
       onChange={onChange}
       placeholder={placeholder}
       disabled={disabled}

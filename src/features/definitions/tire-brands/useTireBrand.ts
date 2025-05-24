@@ -1,4 +1,7 @@
+'use client';
+
 // Lastik Markası işlemleri için custom hook
+
 import { useCallback, useEffect, useState } from 'react';
 import { getAllTireBrands, createTireBrand, updateTireBrand, deleteTireBrand, TireBrand } from './tireBrandService';
 

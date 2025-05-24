@@ -216,6 +216,18 @@ export default function AppSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
+                tooltip='Şubeler'
+                isActive={pathname === '/dashboard/definitions/branches'}
+              >
+                <Link href='/dashboard/definitions/branches'>
+                  <Icons.settings className='mr-2' />
+                  <span>Şubeler</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
                 tooltip='Markalar'
                 isActive={pathname === '/dashboard/definitions/brands'}
               >
@@ -282,6 +294,18 @@ export default function AppSidebar() {
                 <Link href='/dashboard/definitions/vehicle-types'>
                   <Icons.settings className='mr-2' />
                   <span>Araç Tipleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Araç Statüleri'
+                isActive={pathname === '/dashboard/definitions/vehicle-statuses'}
+              >
+                <Link href='/dashboard/definitions/vehicle-statuses'>
+                  <Icons.settings className='mr-2' />
+                  <span>Araç Statüleri</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -414,6 +438,18 @@ export default function AppSidebar() {
                 <Link href='/dashboard/definitions/tire-models'>
                   <Icons.settings className='mr-2' />
                   <span>Lastik Modelleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Araç Paketleri'
+                isActive={pathname === '/dashboard/definitions/packages'}
+              >
+                <Link href='/dashboard/definitions/packages'>
+                  <Icons.settings className='mr-2' />
+                  <span>Araç Paketleri</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

@@ -5,26 +5,46 @@ import { VehicleFormValues } from './vehicle-schema';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useForm } from 'react-hook-form';
 import VehicleCreateTabs from './VehicleCreateTabs';
+import { createVehicle } from './vehicleService';
 
 const VehicleCreatePage: React.FC = () => {
   const form = useForm<VehicleFormValues>({ mode: 'onTouched' });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // Simüle edilmiş submit fonksiyonu
+  // Gerçek API entegrasyonu
   const handleSubmit = async (data: VehicleFormValues) => {
     setLoading(true);
     setToast(null);
-    // API isteği simülasyonu
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    const isSuccess = Math.random() > 0.3;
-    setLoading(false);
-    if (isSuccess) {
+    try {
+      // Tüm id alanlarını number'a çevir, gereksiz alanları çıkar, eksik alanları ekle
+      const payload = {
+        ...data,
+        branch_id: Number(data.branch_id),
+        vehicle_type_id: Number(data.vehicle_type_id),
+        brand_id: Number(data.brand_id),
+        model_id: Number(data.model_id),
+        vehicle_status_id: Number(data.vehicle_status_id),
+        package: data.package, // string olacak, eğer package_id varsa uygun şekilde maplenmeli
+        vehicle_group_id: data.vehicle_group_id ? Number(data.vehicle_group_id) : undefined,
+        fuel_type_id: Number(data.fuel_type_id),
+        transmission_id: Number(data.transmission_id),
+        model_year: Number(data.model_year),
+        color_id: Number(data.color_id),
+        engine_power_hp: data.engine_power_hp ? Number(data.engine_power_hp) : undefined,
+        engine_volume_cc: data.engine_volume_cc ? Number(data.engine_volume_cc) : undefined,
+        vehicle_responsible_id: data.vehicle_responsible_id ? Number(data.vehicle_responsible_id) : undefined,
+        vehicle_km: data.vehicle_km ? Number(data.vehicle_km) : undefined,
+        acquisition_cost: data.acquisition_cost ? Number(data.acquisition_cost) : undefined,
+        current_client_company_id: data.current_client_company_id ? Number(data.current_client_company_id) : undefined,
+      };
+      await createVehicle(payload);
       setToast({ type: 'success', message: 'Araç başarıyla kaydedildi!' });
       form.reset();
-    } else {
-      setToast({ type: 'error', message: 'Kayıt sırasında bir hata oluştu.' });
+    } catch (err: any) {
+      setToast({ type: 'error', message: err.message || 'Kayıt sırasında bir hata oluştu.' });
     }
+    setLoading(false);
   };
 
   return (
