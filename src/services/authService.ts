@@ -52,6 +52,31 @@ export async function logout(): Promise<void> {
 
 import { apiFetch } from './api';
 
+export async function requestPasswordReset(email: string): Promise<void> {
+  const res = await apiFetch(`${API_BASE}/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  });
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error || 'Şifre sıfırlama e-postası gönderilemedi.');
+  }
+}
+
+export async function resetPassword(token: string|null, newPassword: string): Promise<void> {
+  const res = await apiFetch(`${API_BASE}/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, newPassword })
+  });
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error || 'Şifre güncellenemedi.');
+  }
+}
+
+
 export async function getMe(): Promise<AuthUser | null> {
   const res = await apiFetch(`${API_BASE}/me`);
   if (res.status === 401) return null;

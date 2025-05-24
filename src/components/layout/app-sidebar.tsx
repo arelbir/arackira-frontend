@@ -198,6 +198,83 @@ export default function AppSidebar() {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Tanımlar</SidebarGroupLabel>
+          <SidebarMenu>
+             <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Renk Tanımları'
+                isActive={pathname === '/dashboard/definitions/colors'}
+              >
+                <Link href='/dashboard/definitions/colors'>
+                  <Icons.settings className='mr-2' />
+                  <span>Renkler</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Markalar'
+                isActive={pathname === '/dashboard/definitions/brands'}
+              >
+                <Link href='/dashboard/definitions/brands'>
+                  <Icons.settings className='mr-2' />
+                  <span>Markalar</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Modeller'
+                isActive={pathname === '/dashboard/definitions/models'}
+              >
+                <Link href='/dashboard/definitions/models'>
+                  <Icons.settings className='mr-2' />
+                  <span>Modeller</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Müşteri Tipleri'
+                isActive={pathname === '/dashboard/definitions/client-types'}
+              >
+                <Link href='/dashboard/definitions/client-types'>
+                  <Icons.settings className='mr-2' />
+                  <span>Müşteri Tipleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Yakıt Tipleri'
+                isActive={pathname === '/dashboard/definitions/fuel-types'}
+              >
+                <Link href='/dashboard/definitions/fuel-types'>
+                  <Icons.settings className='mr-2' />
+                  <span>Yakıt Tipleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Vites Tipleri'
+                isActive={pathname === '/dashboard/definitions/transmissions'}
+              >
+                <Link href='/dashboard/definitions/transmissions'>
+                  <Icons.settings className='mr-2' />
+                  <span>Vites Tipleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
