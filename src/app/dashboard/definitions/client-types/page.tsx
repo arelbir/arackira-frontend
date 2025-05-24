@@ -16,7 +16,7 @@ const ClientTypesPage = () => {
     addClientType,
     editClientType,
     removeClientType
-  } = useClientType(token);
+  } = useClientType(token); // token is string | null, handled in the hook
 
   const [formOpen, setFormOpen] = useState(false);
   const [editData, setEditData] = useState<Partial<ClientType> | undefined>(undefined);

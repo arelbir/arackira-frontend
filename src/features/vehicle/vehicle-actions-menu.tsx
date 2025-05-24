@@ -11,7 +11,6 @@ export interface Vehicle {
   id: number;
   plate_number: string;
   brand: string;
-  model: string;
   year: number;
   current_status: string;
   [key: string]: any;

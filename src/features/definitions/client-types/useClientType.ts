@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getAllClientTypes, createClientType, updateClientType, deleteClientType, ClientType } from './clientTypeService';
 
-export function useClientType(token: string) {
+export function useClientType(token: string | null) {
   const [clientTypes, setClientTypes] = useState<ClientType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -11,6 +11,7 @@ export function useClientType(token: string) {
     setLoading(true);
     setError(null);
     try {
+      if (!token) throw new Error('Kullanıcı oturumu bulunamadı');
       const data = await getAllClientTypes(token);
       setClientTypes(data);
     } catch (e: any) {
@@ -23,6 +24,7 @@ export function useClientType(token: string) {
     setLoading(true);
     setError(null);
     try {
+      if (!token) throw new Error('Kullanıcı oturumu bulunamadı');
       const newClientType = await createClientType(data, token);
       setClientTypes(prev => [...prev, newClientType]);
     } catch (e: any) {
@@ -35,6 +37,7 @@ export function useClientType(token: string) {
     setLoading(true);
     setError(null);
     try {
+      if (!token) throw new Error('Kullanıcı oturumu bulunamadı');
       const updated = await updateClientType(id, data, token);
       setClientTypes(prev => prev.map(c => c.id === id ? updated : c));
     } catch (e: any) {
@@ -47,6 +50,7 @@ export function useClientType(token: string) {
     setLoading(true);
     setError(null);
     try {
+      if (!token) throw new Error('Kullanıcı oturumu bulunamadı');
       await deleteClientType(id, token);
       setClientTypes(prev => prev.filter(c => c.id !== id));
     } catch (e: any) {

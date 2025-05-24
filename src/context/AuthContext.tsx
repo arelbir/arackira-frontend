@@ -16,6 +16,7 @@ import {
 
 interface AuthContextType {
   user: AuthUser | null;
+  token: string | null;
   loading: boolean;
   error: string | null;
   loginUser: (username: string, password: string) => Promise<void>;
@@ -32,13 +33,24 @@ export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Sadece ilk mount'ta kullanıcıyı kontrol et
+  // İlk mount'ta token'ı localStorage'dan al
   useEffect(() => {
+    const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (storedToken) setToken(storedToken);
     refreshUser();
     // eslint-disable-next-line
   }, []);
@@ -48,8 +60,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const me = await getMe();
       setUser(me);
+      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      setToken(storedToken);
     } catch (e) {
       setUser(null);
+      setToken(null);
     } finally {
       setLoading(false);
     }
@@ -60,10 +75,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
     try {
       await login(username, password);
+      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      setToken(storedToken);
       await refreshUser(); // login sonrası kullanıcıyı tekrar yükle
     } catch (e: any) {
       setError(e.message);
       setUser(null);
+      setToken(null);
     } finally {
       setLoading(false);
     }
@@ -78,10 +96,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
     try {
       await register(username, password, role);
+      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      setToken(storedToken);
       await refreshUser(); // register sonrası kullanıcıyı tekrar yükle
     } catch (e: any) {
       setError(e.message);
       setUser(null);
+      setToken(null);
     } finally {
       setLoading(false);
     }
@@ -92,6 +113,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await logout();
       setUser(null);
+      setToken(null);
+      if (typeof window !== 'undefined') localStorage.removeItem('token');
     } finally {
       setLoading(false);
     }
@@ -101,6 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         user,
+        token,
         loading,
         error,
         loginUser,

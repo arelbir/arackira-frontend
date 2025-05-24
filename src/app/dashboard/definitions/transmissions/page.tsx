@@ -16,7 +16,7 @@ const TransmissionsPage = () => {
     addTransmission,
     editTransmission,
     removeTransmission
-  } = useTransmission(token);
+  } = useTransmission(token); // token is string | null, handled in the hook
 
   const [formOpen, setFormOpen] = useState(false);
   const [editData, setEditData] = useState<Partial<Transmission> | undefined>(undefined);

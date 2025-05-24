@@ -273,6 +273,198 @@ export default function AppSidebar() {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Araç Tipleri'
+                isActive={pathname === '/dashboard/definitions/vehicle-types'}
+              >
+                <Link href='/dashboard/definitions/vehicle-types'>
+                  <Icons.settings className='mr-2' />
+                  <span>Araç Tipleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Sigorta Şirketleri'
+                isActive={pathname === '/dashboard/definitions/insurance-companies'}
+              >
+                <Link href='/dashboard/definitions/insurance-companies'>
+                  <Icons.settings className='mr-2' />
+                  <span>Sigorta Şirketleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Sigorta Tipleri'
+                isActive={pathname === '/dashboard/definitions/insurance-types'}
+              >
+                <Link href='/dashboard/definitions/insurance-types'>
+                  <Icons.settings className='mr-2' />
+                  <span>Sigorta Tipleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Ödeme Tipleri'
+                isActive={pathname === '/dashboard/definitions/payment-types'}
+              >
+                <Link href='/dashboard/definitions/payment-types'>
+                  <Icons.settings className='mr-2' />
+                  <span>Ödeme Tipleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Ödeme Hesapları'
+                isActive={pathname === '/dashboard/definitions/payment-accounts'}
+              >
+                <Link href='/dashboard/definitions/payment-accounts'>
+                  <Icons.settings className='mr-2' />
+                  <span>Ödeme Hesapları</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Para Birimleri'
+                isActive={pathname === '/dashboard/definitions/currencies'}
+              >
+                <Link href='/dashboard/definitions/currencies'>
+                  <Icons.settings className='mr-2' />
+                  <span>Para Birimleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Ajanslar'
+                isActive={pathname === '/dashboard/definitions/agencies'}
+              >
+                <Link href='/dashboard/definitions/agencies'>
+                  <Icons.settings className='mr-2' />
+                  <span>Ajanslar</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Servis Şirketleri'
+                isActive={pathname === '/dashboard/definitions/service-companies'}
+              >
+                <Link href='/dashboard/definitions/service-companies'>
+                  <Icons.settings className='mr-2' />
+                  <span>Servis Şirketleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Servis Tipleri'
+                isActive={pathname === '/dashboard/definitions/service-types'}
+              >
+                <Link href='/dashboard/definitions/service-types'>
+                  <Icons.settings className='mr-2' />
+                  <span>Servis Tipleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Tedarikçi Kategorileri'
+                isActive={pathname === '/dashboard/definitions/supplier-categories'}
+              >
+                <Link href='/dashboard/definitions/supplier-categories'>
+                  <Icons.settings className='mr-2' />
+                  <span>Tedarikçi Kategorileri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Lastik Markaları'
+                isActive={pathname === '/dashboard/definitions/tire-brands'}
+              >
+                <Link href='/dashboard/definitions/tire-brands'>
+                  <Icons.settings className='mr-2' />
+                  <span>Lastik Markaları</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Lastik Modelleri'
+                isActive={pathname === '/dashboard/definitions/tire-models'}
+              >
+                <Link href='/dashboard/definitions/tire-models'>
+                  <Icons.settings className='mr-2' />
+                  <span>Lastik Modelleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Lastik Tipleri'
+                isActive={pathname === '/dashboard/definitions/tire-types'}
+              >
+                <Link href='/dashboard/definitions/tire-types'>
+                  <Icons.settings className='mr-2' />
+                  <span>Lastik Tipleri</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Lastik Pozisyonları'
+                isActive={pathname === '/dashboard/definitions/tire-positions'}
+              >
+                <Link href='/dashboard/definitions/tire-positions'>
+                  <Icons.settings className='mr-2' />
+                  <span>Lastik Pozisyonları</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Lastik Durumları'
+                isActive={pathname === '/dashboard/definitions/tire-conditions'}
+              >
+                <Link href='/dashboard/definitions/tire-conditions'>
+                  <Icons.settings className='mr-2' />
+                  <span>Lastik Durumları</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip='Tedarikçiler'
+                isActive={pathname === '/dashboard/definitions/tyre-suppliers'}
+              >
+                <Link href='/dashboard/definitions/tyre-suppliers'>
+                  <Icons.settings className='mr-2' />
+                  <span>Tedarikçiler</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

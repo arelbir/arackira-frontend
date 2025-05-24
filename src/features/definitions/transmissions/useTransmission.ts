@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getAllTransmissions, createTransmission, updateTransmission, deleteTransmission, Transmission } from './transmissionService';
 
-export function useTransmission(token: string) {
+export function useTransmission(token: string | null) {
   const [transmissions, setTransmissions] = useState<Transmission[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -11,6 +11,7 @@ export function useTransmission(token: string) {
     setLoading(true);
     setError(null);
     try {
+      if (!token) throw new Error('Kullanıcı oturumu bulunamadı');
       const data = await getAllTransmissions(token);
       setTransmissions(data);
     } catch (e: any) {
@@ -23,6 +24,7 @@ export function useTransmission(token: string) {
     setLoading(true);
     setError(null);
     try {
+      if (!token) throw new Error('Kullanıcı oturumu bulunamadı');
       const newTransmission = await createTransmission(data, token);
       setTransmissions(prev => [...prev, newTransmission]);
     } catch (e: any) {
@@ -35,6 +37,7 @@ export function useTransmission(token: string) {
     setLoading(true);
     setError(null);
     try {
+      if (!token) throw new Error('Kullanıcı oturumu bulunamadı');
       const updated = await updateTransmission(id, data, token);
       setTransmissions(prev => prev.map(t => t.id === id ? updated : t));
     } catch (e: any) {
@@ -47,6 +50,7 @@ export function useTransmission(token: string) {
     setLoading(true);
     setError(null);
     try {
+      if (!token) throw new Error('Kullanıcı oturumu bulunamadı');
       await deleteTransmission(id, token);
       setTransmissions(prev => prev.filter(t => t.id !== id));
     } catch (e: any) {

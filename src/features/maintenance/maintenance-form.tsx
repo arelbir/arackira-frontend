@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { maintenanceSchema, MaintenanceFormValues } from './maintenance-schema';
-import { useVehicle } from '@/hooks/useVehicle';
+import { useVehicle } from '@/features/vehicle/hooks/useVehicle';
 
 interface MaintenanceFormProps {
   onSubmit: (data: MaintenanceFormValues) => void;

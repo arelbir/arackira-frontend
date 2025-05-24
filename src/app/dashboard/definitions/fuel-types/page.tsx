@@ -16,7 +16,7 @@ const FuelTypesPage = () => {
     addFuelType,
     editFuelType,
     removeFuelType
-  } = useFuelType(token);
+  } = useFuelType(token); // token is string | null, handled in the hook
 
   const [formOpen, setFormOpen] = useState(false);
   const [editData, setEditData] = useState<Partial<FuelType> | undefined>(undefined);

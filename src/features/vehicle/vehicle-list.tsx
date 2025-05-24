@@ -2,37 +2,31 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useBrand, useModel, useColor } from '@/features/definitions/hooks';
 import { Switch } from '@/components/ui/switch';
 import { MoreVertical } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import VehicleForm from './vehicle-form';
-import VehicleDetailModal from './vehicle-detail-modal';
+import VehicleDetailModal from './VehicleDetailModal';
 import VehicleActionsMenu from './vehicle-actions-menu';
-import { useVehicle } from '@/hooks/useVehicle';
+import { useVehicle } from '@/features/vehicle/hooks/useVehicle';
 
-const VehicleList: React.FC = () => {
+interface VehicleListProps {
+  // Add props type definition here if needed
+}
+
+const VehicleList: React.FC<VehicleListProps> = () => {
   const { vehicles, loading, error } = useVehicle();
+  const { brands } = useBrand();
+  const { models } = useModel();
+  const { colors } = useColor();
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<
-    'all' | 'active' | 'maintenance' | 'rented' | 'disposed'
-  >('all');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editVehicleState, setEditVehicle] = useState<any | null>(null);
+  const [filter, setFilter] = useState<'all' | 'active' | 'maintenance' | 'rented' | 'disposed'>('all');
   const [detailVehicle, setDetailVehicle] = useState<any | null>(null);
-  const [success, setSuccess] = useState('');
 
-  const activeCount = vehicles.filter(
-    (v: any) => v.current_status === 'active'
-  ).length;
-  const maintenanceCount = vehicles.filter(
-    (v: any) => v.current_status === 'maintenance'
-  ).length;
-  const rentedCount = vehicles.filter(
-    (v: any) => v.current_status === 'rented'
-  ).length;
-  const disposedCount = vehicles.filter(
-    (v: any) => v.current_status === 'disposed'
-  ).length;
+  const activeCount = vehicles.filter((v: any) => v.current_status === 'active').length;
+  const maintenanceCount = vehicles.filter((v: any) => v.current_status === 'maintenance').length;
+  const rentedCount = vehicles.filter((v: any) => v.current_status === 'rented').length;
+  const disposedCount = vehicles.filter((v: any) => v.current_status === 'disposed').length;
 
   const filteredVehicles = vehicles.filter((v: any) => {
     if (filter !== 'all' && v.current_status !== filter) return false;
@@ -40,30 +34,25 @@ const VehicleList: React.FC = () => {
       search &&
       !(
         v.plate_number?.toLowerCase().includes(search.toLowerCase()) ||
-        v.brand?.toLowerCase().includes(search.toLowerCase()) ||
-        v.model?.toLowerCase().includes(search.toLowerCase())
+        v.brand_id?.toString().includes(search) ||
+        v.model_id?.toString().includes(search) ||
+        v.branch_id?.toString().includes(search)
       )
     )
       return false;
     return true;
   });
 
-  function handleOpenAdd() {
-    setEditVehicle(null);
-    setModalOpen(true);
+  // Tam sayfa yönlendirme için navigate fonksiyonu (React Router veya Next.js)
+  function handleAdd() {
+    window.location.href = '/dashboard/vehicles/create';
+    // Eğer React Router kullanıyorsanız:
+    // navigate('/vehicles/create');
   }
-  function handleEdit(v: any) {
-    setEditVehicle(v);
-    setModalOpen(true);
-  }
-  function handleCloseModal() {
-    setEditVehicle(null);
-    setModalOpen(false);
-  }
-  async function handleSubmit(data: any) {
-    // Araç ekleme/güncelleme işlemleri geçici olarak devre dışı. (useVehicle sadece listeleme yapıyor)
-    setModalOpen(false);
-    setTimeout(() => setSuccess(''), 2000);
+  function handleEdit(vehicle: any) {
+    window.location.href = `/dashboard/vehicles/edit/${vehicle.id}`;
+    // Eğer React Router kullanıyorsanız:
+    // navigate(`/vehicles/edit/${vehicle.id}`);
   }
 
   return (
@@ -97,7 +86,7 @@ const VehicleList: React.FC = () => {
             <span className='text-muted-foreground'>{disposedCount}</span>
           </div>
           <button
-            onClick={handleOpenAdd}
+            onClick={handleAdd}
             className='bg-primary hover:bg-primary/90 ml-auto rounded px-5 py-2 font-semibold text-white'
           >
             Yeni Araç Ekle
@@ -144,7 +133,6 @@ const VehicleList: React.FC = () => {
             </button>
           </div>
         </div>
-        {success && <div className='mt-2 px-8 text-green-600'>{success}</div>}
         {loading ? (
           <div className='flex flex-col gap-2 p-8'>
             {Array.from({ length: 3 }, (_, index) => (
@@ -196,15 +184,15 @@ const VehicleList: React.FC = () => {
                     <td className='px-6 py-4 text-left text-sm'>
                       {v.plate_number}
                     </td>
-                    <td className='px-6 py-4 text-left text-sm'>{v.brand}</td>
-                    <td className='px-6 py-4 text-left text-sm'>{v.model}</td>
-                    <td className='px-6 py-4 text-left text-sm'>{v.year}</td>
+                    <td className='px-6 py-4 text-left text-sm'>{brands.find((b: {id: number, name: string}) => b.id === v.brand_id)?.name || v.brand_id}</td>
+                    <td className='px-6 py-4 text-left text-sm'>{models.find((m: {id: number, name: string}) => m.id === v.model_id)?.name || v.model_id}</td>
+                    <td className='px-6 py-4 text-left text-sm'>{v.branch_id}</td>
+                    <td className='px-6 py-4 text-left text-sm'>{colors.find((c: {id: number, name: string}) => c.id === v.color_id)?.name || v.color_id}</td>
                     <td className='px-6 py-4 text-right text-sm'>
                       <VehicleActionsMenu
                         vehicle={v}
-                        onEdit={handleEdit}
-                        // onDelete özelliği devre dışı (useVehicle sadece listeleme yapıyor)
-    onDelete={undefined}
+                        onEdit={() => window.location.href = `/vehicles/edit/${v.id}`}
+                        onDelete={undefined}
                         onDetail={setDetailVehicle}
                       />
                     </td>
@@ -214,47 +202,7 @@ const VehicleList: React.FC = () => {
             </table>
           </div>
         )}
-        {modalOpen && (
-          <div className='fixed inset-0 z-50 flex'>
-            {/* Overlay */}
-            <div
-              className='fixed inset-0 bg-black/40 transition-opacity'
-              onClick={handleCloseModal}
-            />
-            {/* Drawer */}
-            <div className='bg-background animate-slidein-right relative ml-auto flex h-full w-full max-w-xl flex-col shadow-2xl'>
-              <button
-                onClick={handleCloseModal}
-                className='text-muted-foreground hover:text-foreground absolute top-4 right-4 text-xl transition-colors'
-              >
-                &times;
-              </button>
-              <div className='flex h-full flex-col gap-2 px-8 pt-8 pb-4'>
-                <h2 className='text-foreground mb-4 text-xl font-bold'>
-                  {editVehicleState ? 'Araç Düzenle' : 'Yeni Araç Ekle'}
-                </h2>
-                <div className='flex-1 overflow-y-auto'>
-                  <VehicleForm
-                    onSubmit={handleSubmit}
-                    loading={loading}
-                    initialData={editVehicleState}
-                    layout='grid'
-                  />
-                  <div className='bg-background border-border sticky right-0 bottom-0 left-0 z-10 border-t px-8 py-4'>
-                    <button
-                      type='submit'
-                      form='vehicle-form'
-                      disabled={loading}
-                      className='bg-primary hover:bg-primary/90 w-full rounded-xl py-3 font-semibold text-white transition-all disabled:opacity-60'
-                    >
-                      {loading ? 'Kaydediliyor...' : 'Kaydet'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
         <VehicleDetailModal
           vehicle={detailVehicle}
           onClose={() => setDetailVehicle(null)}

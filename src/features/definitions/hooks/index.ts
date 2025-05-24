@@ -1,0 +1,23 @@
+// Ortak tanım hook'ları merkezi export dosyası
+export { useAgency } from '../agencies/useAgency';
+export { useBrand } from '../brands/useBrand';
+export { useClientType } from '../client-types/useClientType';
+export { useColor } from '../colors/useColor';
+export { useCurrency } from '../currencies/useCurrency';
+export { useFuelType } from '../fuel-types/useFuelType';
+export { useInsuranceCompany } from '../insurance-companies/useInsuranceCompany';
+export { useInsuranceType } from '../insurance-types/useInsuranceType';
+export { useModel } from '../models/useModel';
+export { usePaymentAccount } from '../payment-accounts/usePaymentAccount';
+export { usePaymentType } from '../payment-types/usePaymentType';
+export { useServiceCompany } from '../service-companies/useServiceCompany';
+export { useServiceType } from '../service-types/useServiceType';
+export { useSupplierCategory } from '../supplier-categories/useSupplierCategory';
+export { useTireBrand } from '../tire-brands/useTireBrand';
+export { useTireCondition } from '../tire-conditions/useTireCondition';
+export { useTireModel } from '../tire-models/useTireModel';
+export { useTirePosition } from '../tire-positions/useTirePosition';
+export { useTireType } from '../tire-types/useTireType';
+export { useTransmission } from '../transmissions/useTransmission';
+export { useTyreSupplier } from '../tyre-suppliers/useTyreSupplier';
+export { useVehicleType } from '../vehicle-types/useVehicleType';
