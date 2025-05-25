@@ -2,6 +2,12 @@
 import { apiFetch } from '@/services/api';
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000';
 
+export interface Branch {
+  id: number;
+  name: string;
+  // Add more fields if needed
+}
+
 export async function getAllBranches() {
   const res = await apiFetch(`${API_BASE}/api/branches`);
   if (!res.ok) throw new Error('Şubeler alınamadı');

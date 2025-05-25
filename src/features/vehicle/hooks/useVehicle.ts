@@ -1,6 +1,9 @@
+"use client"
+
+
 import { useCallback, useEffect, useState } from 'react';
 // NOT: Aşağıdaki servis fonksiyonları gerçek API'nize göre güncellenmeli
-import { getAllVehicles, createVehicle, updateVehicle, deleteVehicle, Vehicle } from '../vehicleService';
+import { getAllVehicles, createVehicle, updateVehicle, Vehicle, deleteDraftVehicle, deleteVehicle } from '../vehicleService'; // deleteVehicle eklendi
 
 export function useVehicle() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -43,11 +46,16 @@ export function useVehicle() {
     setLoading(false);
   }, []);
 
-  const removeVehicle = useCallback(async (id: number) => {
+  // Hem normal hem taslak araç silme destekleniyor. isDraft parametresi ile ayrım yapılır.
+  const removeVehicle = useCallback(async (id: number, isDraft: boolean) => {
     setLoading(true);
     setError(null);
     try {
-      await deleteVehicle(id);
+      if (isDraft) {
+        await deleteDraftVehicle(id);
+      } else {
+        await deleteVehicle(id);
+      }
       setVehicles((prev) => prev.filter(v => v.id !== id));
     } catch (e: any) {
       setError(e.message);
@@ -57,7 +65,8 @@ export function useVehicle() {
 
   useEffect(() => {
     fetchVehicles();
-  }, [fetchVehicles]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     vehicles,

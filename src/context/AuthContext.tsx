@@ -60,11 +60,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const me = await getMe();
       setUser(me);
-      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      setToken(storedToken);
-    } catch (e) {
+      setError(null);
+    } catch (err: any) {
       setUser(null);
-      setToken(null);
+      setError(err.message || 'Kullanıcı bilgisi alınamadı');
     } finally {
       setLoading(false);
     }

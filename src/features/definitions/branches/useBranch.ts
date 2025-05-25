@@ -1,5 +1,5 @@
 // Şubeler için hook
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 
 export interface Branch {
   id: number;
@@ -27,11 +27,16 @@ export function useBranch() {
     try {
       const data = await getAllBranches();
       setBranches(data);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (err) {
+      setError('Şubeler alınamadı');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
+
+  // Debug logs for diagnosis
+  console.log('useBranch: fetchBranches ref', fetchBranches);
+  console.log('useBranch: branches ref', branches);
 
   const addBranch = useCallback(async (data: Omit<Branch, 'id' | 'created_at'>) => {
     setLoading(true);
@@ -71,15 +76,16 @@ export function useBranch() {
 
   useEffect(() => {
     fetchBranches();
-  }, [fetchBranches]);
+  }, []);
 
+  const memoBranches = useMemo(() => branches, [branches]);
   return {
-    branches,
+    branches: memoBranches,
     loading,
     error,
-    fetchBranches,
     addBranch,
     editBranch,
     removeBranch,
+    refetch: fetchBranches,
   };
 }

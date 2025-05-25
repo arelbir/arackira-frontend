@@ -1,13 +1,16 @@
 // Ortak tanım hook'ları merkezi export dosyası
 export { useAgency } from '../agencies/useAgency'; //Sigorta Firmaları
-export { useBrand } from '../brands/useBrand'; // Araç Markaları
+export * from '../brands/BrandContext';
+console.log('BrandContext hook loaded'); // Araç Markaları
 export { useClientType } from '../client-types/useClientType'; // Müşteri Tipleri
-export { useColor } from '../colors/useColor'; // Renkler
+export * from '../colors/ColorContext';
+console.log('ColorContext hook loaded'); // Renkler
 export { useCurrency } from '../currencies/useCurrency'; // Para Birimleri
 export { useFuelType } from '../fuel-types/useFuelType'; // Yakıt Türü
 export { useInsuranceCompany } from '../insurance-companies/useInsuranceCompany'; // Sigorta Firmaları
 export { useInsuranceType } from '../insurance-types/useInsuranceType'; // Sigorta Türü
-export { useModel } from '../models/useModel'; // Araç Modelleri
+export * from '../models/ModelContext';
+console.log('ModelContext hook loaded'); // Araç Modelleri
 export { useModelsByBrand } from '../models/useModelsByBrand'; // Belirli bir markanın modelleri
 export { usePackagesByModel } from '../packages/usePackagesByModel'; // Model bazlı paketler
 export { usePaymentAccount } from '../payment-accounts/usePaymentAccount'; // Ödeme Hesapları
@@ -24,5 +27,5 @@ export { useTransmission } from '../transmissions/useTransmission'; // Vites Tü
 export { useTyreSupplier } from '../tyre-suppliers/useTyreSupplier'; // Tekerlek Tedarikçileri
 export { useVehicleType } from '../vehicle-types/useVehicleType'; // Araç Tipi
 export { useVehicleStatuses } from '../vehicle-statuses/useVehicleStatuses'; // Araç Statüleri
-export { useBranch } from '../branches/useBranch'; // Şubeler
-
+export * from '../branches/BranchContext';
+console.log('BranchContext hook loaded'); // Şubeler

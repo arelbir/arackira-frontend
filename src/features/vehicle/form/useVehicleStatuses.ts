@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { getVehicleStatuses, VehicleStatus } from '@/features/definitions/vehicle-statuses/vehicle-statusService';
+import React, { useEffect, useState } from 'react';
+import { getAllVehicleStatuses, VehicleStatus } from '@/features/definitions/vehicle-statuses/vehicleStatusService';
 
 export function useVehicleStatuses() {
   const [statuses, setStatuses] = useState<VehicleStatus[]>([]);
@@ -7,11 +7,21 @@ export function useVehicleStatuses() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getVehicleStatuses()
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+    if (!token) {
+      setError('Oturum bulunamadı');
+      setLoading(false);
+      return;
+    }
+    getAllVehicleStatuses(token)
       .then(setStatuses)
-      .catch(e => setError(e.message))
+      .catch((e: any) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  React.useEffect(() => {
+    console.log('useVehicleStatuses state', { statuses, loading, error });
+  }, [statuses, loading, error]);
 
   return { statuses, loading, error };
 }

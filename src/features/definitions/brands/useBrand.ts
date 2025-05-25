@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { getAllBrands, createBrand, updateBrand, deleteBrand, Brand } from './brandService';
 
 export function useBrand() {
@@ -12,11 +12,16 @@ export function useBrand() {
     try {
       const data = await getAllBrands();
       setBrands(data);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (err) {
+      setError('Markalar alınamadı');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
+
+  // Debug logs for diagnosis
+  console.log('useBrand: fetchBrands ref', fetchBrands);
+  console.log('useBrand: brands ref', brands);
 
   const addBrand = useCallback(async (data: Omit<Brand, 'id' | 'created_at'>) => {
     setLoading(true);
@@ -56,16 +61,17 @@ export function useBrand() {
 
   useEffect(() => {
     fetchBrands();
-  }, [fetchBrands]);
+  }, []);
 
+  const memoBrands = useMemo(() => brands, [brands]);
   return {
-    brands,
+    brands: memoBrands,
     loading,
     error,
-    fetchBrands,
     addBrand,
     editBrand,
     removeBrand,
+    refetch: fetchBrands,
     setBrands,
     setError
   };

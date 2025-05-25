@@ -1,3 +1,6 @@
+
+'use client';
+
 // Araç ekleme sayfası route'u
 import VehicleCreatePage from '@/features/vehicle/VehicleCreatePage';
 import ProtectedRoute from '@/components/ProtectedRoute';

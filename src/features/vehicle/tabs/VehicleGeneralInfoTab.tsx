@@ -5,16 +5,14 @@ import FormSelectField from "../form/FormSelectField";
 import FormDateField from "../form/FormDateField";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
-import {
-  useVehicleType,
-  useBrand,
-  useModelsByBrand,
-  usePackagesByModel,
-  useColor,
-  useFuelType,
-  useTransmission,
-  useBranch
-} from "@/features/definitions/hooks";
+import { useBrand } from "@/features/definitions/brands/BrandContext";
+import { useColor } from "@/features/definitions/colors/ColorContext";
+import { useVehicleType } from "@/features/definitions/vehicle-types/useVehicleType";
+import { useModelsByBrand } from "@/features/definitions/models/useModelsByBrand";
+import { usePackagesByModel } from "@/features/definitions/packages/usePackagesByModel";
+import { useFuelType } from "@/features/definitions/fuel-types/useFuelType";
+import { useTransmission } from "@/features/definitions/transmissions/useTransmission";
+import { useBranch } from "@/features/definitions/branches/BranchContext";
 import { useVehicleStatuses } from '@/features/definitions/vehicle-statuses/useVehicleStatuses';
 
 interface Props {
@@ -26,8 +24,8 @@ const VehicleGeneralInfoTab: React.FC<Props> = ({ form }) => {
 
   // --- Tanım hook'ları ---
   const { vehicleTypes, fetchVehicleTypes, loading: loadingVehicleTypes } = useVehicleType(token);
-  const { brands, fetchBrands, loading: loadingBrands } = useBrand();
-  const { colors, fetchColors, loading: loadingColors } = useColor();
+  const { brands, loading: loadingBrands } = useBrand();
+  const { colors, loading: loadingColors } = useColor();
   const { fuelTypes, fetchFuelTypes, loading: loadingFuelTypes } = useFuelType(token);
   const { transmissions, fetchTransmissions, loading: loadingTransmissions } = useTransmission(token);
   const { vehicleStatuses, loading: statusesLoading } = useVehicleStatuses();
@@ -46,11 +44,9 @@ const VehicleGeneralInfoTab: React.FC<Props> = ({ form }) => {
   // --- İlk yüklemede tanım verilerini çek ---
   useEffect(() => {
     fetchVehicleTypes();
-    fetchBrands();
-    fetchColors();
-    fetchFuelTypes();
-    fetchTransmissions();
-  }, [fetchVehicleTypes, fetchBrands, fetchColors, fetchFuelTypes, fetchTransmissions]);
+    if (fetchFuelTypes) fetchFuelTypes();
+    if (fetchTransmissions) fetchTransmissions();
+  }, [fetchVehicleTypes, fetchFuelTypes, fetchTransmissions]);
 
   return (
     <Card>
@@ -190,7 +186,7 @@ const VehicleGeneralInfoTab: React.FC<Props> = ({ form }) => {
                 <FormSelectField
                   {...field}
                   label="Araç Tipi"
-                  options={vehicleTypes.map(vt => ({ value: String(vt.id), label: vt.name }))}
+                  options={vehicleTypes.map((vt: import("@/features/definitions/vehicle-types/vehicleTypeService").VehicleType) => ({ value: String(vt.id), label: vt.name }))}
                   error={form.formState.errors.vehicle_type_id}
                   placeholder="Araç tipi seçiniz"
                   disabled={loadingVehicleTypes}
@@ -220,7 +216,7 @@ const VehicleGeneralInfoTab: React.FC<Props> = ({ form }) => {
                 <FormSelectField
                   {...field}
                   label="Model"
-                  options={models.map(m => ({ value: String(m.id), label: m.name }))}
+                  options={models.map((m: import("@/features/definitions/models/modelService").Model) => ({ value: String(m.id), label: m.name }))}
                   error={form.formState.errors.model_id}
                   placeholder="Model seçiniz"
                   disabled={loadingModels || !selectedBrandId}
@@ -267,7 +263,7 @@ const VehicleGeneralInfoTab: React.FC<Props> = ({ form }) => {
                   value={field.value ?? ''}
                   onChange={field.onChange}
                   label="Yakıt Tipi"
-                  options={fuelTypes.map(f => ({ value: String(f.id), label: f.name }))}
+                  options={fuelTypes.map((f: import("@/features/definitions/fuel-types/fuelTypeService").FuelType) => ({ value: String(f.id), label: f.name }))}
                   error={form.formState.errors.fuel_type_id}
                   placeholder="Yakıt tipi seçiniz"
                   disabled={loadingFuelTypes}
@@ -284,7 +280,7 @@ const VehicleGeneralInfoTab: React.FC<Props> = ({ form }) => {
                   value={field.value ?? ''}
                   onChange={field.onChange}
                   label="Vites Tipi"
-                  options={transmissions.map(t => ({ value: String(t.id), label: t.name }))}
+                  options={transmissions.map((t: any) => ({ value: String(t.id), label: t.name }))}
                   error={form.formState.errors.transmission_id}
                   placeholder="Vites tipi seçiniz"
                   disabled={loadingTransmissions}

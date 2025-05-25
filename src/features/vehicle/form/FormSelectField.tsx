@@ -40,8 +40,8 @@ const FormSelectField: React.FC<FormSelectFieldProps> = ({
       className={`w-full rounded border px-3 py-2 text-sm outline-none ${error ? 'border-red-500' : 'border-gray-300'}`}
     >
       {placeholder && <option value="">{placeholder}</option>}
-      {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>
+      {options.map((opt, index) => (
+        <option key={`${opt.value}-${index}`} value={opt.value}>
           {opt.label}
         </option>
       ))}

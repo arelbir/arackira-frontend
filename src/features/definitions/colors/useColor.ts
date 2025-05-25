@@ -1,5 +1,5 @@
 // Renkler için hook (mantık: useVehicle gibi merkezi state ve işlemler)
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 
 export interface Color {
   id: number;
@@ -26,11 +26,18 @@ export function useColor() {
     try {
       const data = await getAllColors();
       setColors(data);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (err) {
+      setError('Renkler alınamadı');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
+
+  // Debug logs for diagnosis
+  console.log('useColor: fetchColors ref', fetchColors);
+  console.log('useColor: colors ref', colors);
+
+
 
   const addColor = useCallback(async (data: Omit<Color, 'id' | 'created_at'>) => {
     setLoading(true);
@@ -70,16 +77,17 @@ export function useColor() {
 
   useEffect(() => {
     fetchColors();
-  }, [fetchColors]);
+  }, []);
 
+  const memoColors = useMemo(() => colors, [colors]);
   return {
-    colors,
+    colors: memoColors,
     loading,
     error,
-    fetchColors,
     addColor,
     editColor,
     removeColor,
+    refetch: fetchColors,
     setColors,
     setError
   };

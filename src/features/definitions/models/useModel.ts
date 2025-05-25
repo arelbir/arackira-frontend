@@ -1,5 +1,5 @@
 // Model state ve işlemleri için custom hook
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { getAllModels, createModel, updateModel, deleteModel, Model } from './modelService';
 import { getAllBrands, Brand } from '../brands/brandService';
 
@@ -9,28 +9,32 @@ export function useModel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Modelleri çek
   const fetchModels = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await getAllModels();
       setModels(data);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (err) {
+      setError('Modeller alınamadı');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  // Markaları çek (brand select için)
   const fetchBrands = useCallback(async () => {
     try {
       const data = await getAllBrands();
       setBrands(data);
-    } catch (e: any) {
-      // Brand çekilemezse formda select boş kalır
+    } catch (err) {
+      // hata yönetimi
     }
   }, []);
+
+  // Debug logs for diagnosis
+  console.log('useModel: fetchModels ref', fetchModels);
+  console.log('useModel: fetchBrands ref', fetchBrands);
+  console.log('useModel: models ref', models);
 
   const addModel = useCallback(async (data: Omit<Model, 'id' | 'created_at'>) => {
     setLoading(true);
@@ -71,7 +75,7 @@ export function useModel() {
   useEffect(() => {
     fetchModels();
     fetchBrands();
-  }, [fetchModels, fetchBrands]);
+  }, []);
 
   return {
     models,
@@ -81,7 +85,6 @@ export function useModel() {
     addModel,
     editModel,
     removeModel,
-    setError,
-    fetchModels
+    refetch: fetchModels,
   };
 }

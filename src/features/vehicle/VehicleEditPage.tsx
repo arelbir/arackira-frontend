@@ -1,5 +1,6 @@
 import React from 'react';
-import VehicleForm from './form/VehicleForm';
+import VehicleTabs from './VehicleTabs';
+import { useForm } from 'react-hook-form';
 import { VehicleFormValues, vehicleSchema } from './vehicle-schema';
 import { getAllVehicles, updateVehicle } from './vehicleService';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -48,6 +49,14 @@ const VehicleEditPage: React.FC = () => {
   // Dummy: Gerçek projede route parametresinden ID alınır ve veri API'den çekilir
   const vehicleId = 1;
 
+  // initialValues ile formu başlat
+  const form = useForm<VehicleFormValues>({
+    mode: 'onTouched',
+    defaultValues: exampleInitialData
+  });
+
+  // Eğer API'den veri çekilecekse burada form.reset() ile güncelleyebilirsiniz
+
   const handleSubmit = async (data: VehicleFormValues) => {
     setLoading(true);
     setError(null);
@@ -66,13 +75,14 @@ const VehicleEditPage: React.FC = () => {
     <ProtectedRoute>
       <div className="max-w-3xl mx-auto py-8">
         <h1 className="text-2xl font-bold mb-6">Araç Düzenle</h1>
-        {success && <div className="mb-4 text-green-600">{success}</div>}
-        {error && <div className="mb-4 text-red-600">{error}</div>}
-        <VehicleForm
+        <VehicleTabs
+          form={form}
+          mode="edit"
           onSubmit={handleSubmit}
           loading={loading}
-          initialData={exampleInitialData}
         />
+        {success && <div className="text-green-600 mt-4">{success}</div>}
+        {error && <div className="text-red-600 mt-4">{error}</div>}
       </div>
     </ProtectedRoute>
   );

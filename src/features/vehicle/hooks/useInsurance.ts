@@ -32,6 +32,7 @@ export function useInsurance(token: string) {
     setLoading(true);
     setError(null);
     try {
+      console.log(`Poliçe verileri çekiliyor: http://localhost:4000/api/insurance?vehicle_id=${vehicleId}`);
       const res = await fetch(`http://localhost:4000/api/insurance?vehicle_id=${vehicleId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -40,8 +41,10 @@ export function useInsurance(token: string) {
       });
       if (!res.ok) throw new Error('Sigorta verileri alınamadı');
       const data = await res.json();
+      console.log('Alınan poliçe verileri:', data);
       setInsurances(data);
     } catch (e: any) {
+      console.error('Poliçe veri çekme hatası:', e);
       setError(e.message || 'Bir hata oluştu');
     }
     setLoading(false);
