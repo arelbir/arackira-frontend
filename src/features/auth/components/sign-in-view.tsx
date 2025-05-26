@@ -1,4 +1,6 @@
 'use client';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,9 +16,9 @@ export default function SignInViewPage({ stars }: SignInViewPageProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  // Hata state'i context'ten alınacak, local hata kaldırıldı
   const router = useRouter();
-  const { loginUser, loading, user } = useAuth();
+  const { loginUser, loading, user, error } = useAuth();
 
   useEffect(() => {
     if (user) {
@@ -27,7 +29,7 @@ export default function SignInViewPage({ stars }: SignInViewPageProps) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     await loginUser(username, password);
-    // setError("Kullanıcı adı veya şifre hatalı!"); // örnek hata
+    // Hata context üzerinden gösterilecek
   };
 
   const { activeTheme } = useThemeConfig();
@@ -72,7 +74,15 @@ export default function SignInViewPage({ stars }: SignInViewPageProps) {
               </h2>
               <ThemeSelector />
             </div>
-            <form onSubmit={handleLogin} className='space-y-4'>
+            {error && (
+              <div className="mb-2 p-2 bg-red-100 text-red-800 rounded text-sm border border-red-300 text-center">
+                {error === 'Kullanıcı bulunamadı veya şifre hatalı' ? 'Kullanıcı adı veya şifre hatalı.' : error}
+              </div>
+            )}
+            <form
+              className='flex flex-col gap-4'
+              onSubmit={handleLogin}
+            >
               <div>
                 <label
                   htmlFor='username'
@@ -118,23 +128,45 @@ export default function SignInViewPage({ stars }: SignInViewPageProps) {
                   </button>
                 </div>
               </div>
-              {error && <p className='text-xs text-red-500 italic'>{error}</p>}
               <button
                 type='submit'
-                disabled={loading}
-                className={`w-full rounded py-2 font-semibold transition ${
-                  activeTheme?.includes('green')
-                    ? 'bg-green-600 text-white hover:bg-green-700'
-                    : activeTheme?.includes('amber')
-                      ? 'bg-amber-500 text-white hover:bg-amber-600'
-                      : activeTheme?.includes('mono')
-                        ? 'bg-neutral-400 text-neutral-900 hover:bg-neutral-500 dark:text-white'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                } `}
+                className='w-full rounded bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700 transition disabled:opacity-50'
+                disabled={loading || !username || !password}
               >
                 {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
               </button>
             </form>
+            <div className={`flex flex-col gap-3 mt-6 w-full items-stretch`}>
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between items-center w-full">
+                <Button
+                  asChild
+                  variant={activeTheme?.includes('amber') ? 'secondary' : activeTheme?.includes('green') ? 'outline' : 'ghost'}
+                  size={activeTheme?.includes('scaled') ? 'lg' : 'sm'}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2"
+                  aria-label="Şifremi Unuttum"
+                >
+                  <Link href="/auth/forgot-password">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="size-4 mr-1 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 17v.01M8.93 6.588a5 5 0 016.14 0M17 11a5 5 0 01-10 0c0-3.866 3.582-7 8-7s8 3.134 8 7c0 4.418-3.582 8-8 8z" /></svg>
+                    Şifremi Unuttum
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant={activeTheme?.includes('green') ? 'default' : activeTheme?.includes('amber') ? 'outline' : 'secondary'}
+                  size={activeTheme?.includes('scaled') ? 'lg' : 'sm'}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2"
+                  aria-label="Kayıt Ol"
+                >
+                  <Link href="/auth/sign-up">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="size-4 mr-1 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    Kayıt Ol
+                  </Link>
+                </Button>
+              </div>
+              <div className="text-center text-xs text-muted-foreground mt-2">
+                Hesabınız yoksa kolayca kayıt olabilirsiniz veya şifrenizi unuttuysanız hızlıca sıfırlayabilirsiniz.
+              </div>
+            </div>
           </div>
         </div>
       </div>

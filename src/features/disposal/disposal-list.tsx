@@ -12,10 +12,10 @@ import {
 import { DisposalFormValues } from './disposal-schema';
 import DisposalActionsMenu from './disposal-actions-menu';
 import DisposalDetailModal from './disposal-detail-modal';
-import { useVehicle } from '@/hooks/useVehicle';
+
 
 const DisposalList: React.FC = () => {
-  const { vehicles } = useVehicle();
+
   const [records, setRecords] = useState<DisposalRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

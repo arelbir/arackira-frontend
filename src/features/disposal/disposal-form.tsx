@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { disposalSchema, DisposalFormValues } from './disposal-schema';
-import { useVehicle } from '@/hooks/useVehicle';
+import { useVehicle } from '@/features/vehicle/hooks/useVehicle';
 
 interface DisposalFormProps {
   onSubmit: (data: DisposalFormValues) => void;

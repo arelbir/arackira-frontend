@@ -10,7 +10,7 @@ import {
 import { MaintenanceFormValues } from './maintenance-schema';
 import MaintenanceActionsMenu from './maintenance-actions-menu';
 import MaintenanceDetailModal from './maintenance-detail-modal';
-import { useVehicle } from '@/hooks/useVehicle';
+import { useVehicle } from '@/features/vehicle/hooks/useVehicle';
 
 export interface MaintenanceRecord {
   id: number;

@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect, ReactNode } from 'react';
@@ -14,6 +15,11 @@ export default function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [waited, setWaited] = React.useState(false);
+  React.useEffect(() => {
+    const t = setTimeout(() => setWaited(true), 8000);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (!loading) {
@@ -31,7 +37,8 @@ export default function ProtectedRoute({
     }
   }, [user, loading, role, router]);
 
-  if (loading) return <div>Yükleniyor...</div>;
+  if (loading && !waited) return <div>Yükleniyor...</div>;
+  if (loading && waited) return <div>Oturum doğrulanamıyor. Lütfen tekrar giriş yapın.</div>;
   if (!user) return null;
   if (role) {
     const userRoles = Array.isArray(user.role) ? user.role : [user.role];

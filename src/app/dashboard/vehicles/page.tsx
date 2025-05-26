@@ -1,5 +1,12 @@
-import VehicleList from '@/features/vehicle/vehicle-list';
+
+
+import VehicleList from '@/features/vehicle/VehicleList';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function VehiclesPage() {
-  return <VehicleList />;
+  return (
+    <ProtectedRoute>
+      <VehicleList />
+    </ProtectedRoute>
+  );
 }

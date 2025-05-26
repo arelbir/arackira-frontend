@@ -6,7 +6,7 @@ import CustomerList, {
 } from '@/features/customer/components/customer-list';
 import CustomerForm from '@/features/customer/components/customer-form';
 import { CustomerFormValues } from '@/features/customer/utils/customer-schema';
-import { useCustomer } from '@/hooks/useCustomer';
+import { useCustomer } from '@/features/customer/hooks/useCustomer';
 import { ToastProvider, useToast } from '@/components/ToastContext';
 
 import { useDebouncedCallback } from '@/hooks/use-debounced-callback';
