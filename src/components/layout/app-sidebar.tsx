@@ -420,6 +420,18 @@ export default function AppSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
+                tooltip='Lastik Tedarikçiler'
+                isActive={pathname === '/dashboard/definitions/tyre-suppliers'}
+              >
+                <Link href='/dashboard/definitions/tyre-suppliers'>
+                  <Icons.settings className='mr-2' />
+                  <span>Lastik Tedarikçiler</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
                 tooltip='Lastik Markaları'
                 isActive={pathname === '/dashboard/definitions/tire-brands'}
               >
@@ -493,9 +505,9 @@ export default function AppSidebar() {
               <SidebarMenuButton
                 asChild
                 tooltip='Tedarikçiler'
-                isActive={pathname === '/dashboard/definitions/tyre-suppliers'}
+                isActive={pathname === '/dashboard/definitions/suppliers'}
               >
-                <Link href='/dashboard/definitions/tyre-suppliers'>
+                <Link href='/dashboard/definitions/suppliers'>
                   <Icons.settings className='mr-2' />
                   <span>Tedarikçiler</span>
                 </Link>

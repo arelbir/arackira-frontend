@@ -1,35 +1,40 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { getAllColors, Color } from './colorService';
+'use client';
+
+import React, { createContext, useContext } from 'react';
+import { useAllColors } from './use-colors';
+import type { Color } from './color-schema';
 
 interface ColorContextType {
   colors: Color[];
   loading: boolean;
-  error: string | null;
+  error: unknown | null;
 }
 
 const ColorContext = createContext<ColorContextType | undefined>(undefined);
 
+/**
+ * Color Provider Component
+ * 
+ * Model ve Brand modülleriyle tutarlılık için hooks bazlı yaklaşım kullanır
+ * React Query'nin sağladığı state yönetimi özellikleri kullanılır
+ */
 export const ColorProvider = ({ children }: { children: React.ReactNode }) => {
-  const [colors, setColors] = useState<Color[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    getAllColors()
-      .then(setColors)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    console.log('ColorProvider state', { colors, loading, error });
-  }, [colors, loading, error]);
-
-  const value = useMemo(() => ({ colors, loading, error }), [colors, loading, error]);
-
+  // useAllColors hook'unu doğrudan kullanarak tüm renk verilerini çekme
+  const colorsQuery = useAllColors();
+  
+  // React Query ile alınan verilerden context değerini oluşturma
+  const value: ColorContextType = {
+    colors: colorsQuery.data || [],
+    loading: colorsQuery.isLoading,
+    error: colorsQuery.error
+  };
+  
   return <ColorContext.Provider value={value}>{children}</ColorContext.Provider>;
 };
 
+/**
+ * Color context hook'u
+ */
 export function useColor() {
   const ctx = useContext(ColorContext);
   if (!ctx) throw new Error('useColor must be used within a ColorProvider');

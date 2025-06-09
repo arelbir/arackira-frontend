@@ -9,7 +9,10 @@ import { useVehicle } from '../hooks/useVehicle';
 import { Vehicle } from '../vehicleService';
 import VehicleDetailModal from './VehicleDetailModal';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { VehicleImportExport } from '../VehicleImportExport';
 import { useBrand, useModel, useColor, useBranch, useVehicleStatuses } from '@/features/definitions/hooks';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // import { useModel } from '@/features/definitions/hooks';
 // import { useColor } from '@/features/definitions/hooks';
 // import { useBranch } from '@/features/definitions/hooks';
@@ -38,6 +41,7 @@ const VehicleList: React.FC = () => {
   const debouncedSearch = useDebounce(search, 300);
   const [statusFilter, setStatusFilter] = useState<'all' | number>('all');
   const [loadingId, setLoadingId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('list');
 
   // İsim eşleştirme yardımcıları
   const getBrandName = useCallback((id?: number | null) => {
@@ -102,45 +106,72 @@ const VehicleList: React.FC = () => {
   const renderedContent = useMemo(() => (
     <ProtectedRoute>
       <div className="h-full w-full flex-1 min-h-0 flex flex-col">
-        <div className="flex items-center gap-4 px-8 pt-8 pb-4">
-          <input
-            type="text"
-            placeholder="Ara: plaka, marka, model, şube, renk..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="bg-muted text-foreground border-border focus:ring-primary w-full max-w-xs rounded border px-4 py-2 focus:ring-2 focus:outline-none"
-          />
-          <div className="flex gap-2">
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={`bg-muted rounded px-4 py-1.5 text-sm font-medium ${statusFilter === 'all' ? 'text-primary' : 'text-foreground'} hover:bg-muted/70`}
-            >
-              Tümü
-            </button>
-            {statuses.map((s: { id: number; name: string }) => (
-              <button
-                key={s.id}
-                onClick={() => setStatusFilter(s.id)}
-                className={`bg-muted rounded px-4 py-1.5 text-sm font-medium ${statusFilter === s.id ? 'text-primary' : 'text-foreground'} hover:bg-muted/70`}
-              >
-                {s.name}
-              </button>
-            ))}
+        <Tabs
+          defaultValue="list"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full h-full flex flex-col"
+        >
+          <div className="flex items-center justify-between px-8 pt-8 pb-4">
+            <TabsList>
+              <TabsTrigger value="list">Araç Listesi</TabsTrigger>
+              <TabsTrigger value="import">Toplu Veri Aktarımı</TabsTrigger>
+            </TabsList>
+            
+            <div className="flex gap-2">
+              {activeTab === 'list' && (
+                <Button
+                  variant="default"
+                  onClick={() => (window.location.href = '/dashboard/vehicles/create')}
+                >
+                  Yeni Araç
+                </Button>
+              )}
+            </div>
           </div>
-          <button
-            className="bg-primary hover:bg-primary/80 ml-auto rounded px-6 py-2 font-semibold text-white"
-            onClick={() => (window.location.href = '/dashboard/vehicles/create')}
-          >
-            Yeni Araç
-          </button>
-        </div>
-        <div className="flex-1 min-h-0 flex flex-col overflow-x-auto px-8 pb-8">
-          {(vehiclesLoading || brandsLoading || modelsLoading || colorsLoading || branchesLoading || statusesLoading) ? (
-            <DataTableSkeleton columnCount={7} rowCount={8} />
-          ) : (
-            <DataTable table={table} />
-          )}
-        </div>
+          
+          <TabsContent value="list" className="flex-1 flex flex-col overflow-auto h-full">
+            <div className="flex items-center gap-4 px-8 pb-4">
+              <input
+                type="text"
+                placeholder="Ara: plaka, marka, model, şube, renk..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="bg-muted text-foreground border-border focus:ring-primary w-full max-w-xs rounded border px-4 py-2 focus:ring-2 focus:outline-none"
+              />
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                <button
+                  onClick={() => setStatusFilter('all')}
+                  className={`bg-muted rounded px-4 py-1.5 text-sm font-medium ${statusFilter === 'all' ? 'text-primary' : 'text-foreground'} hover:bg-muted/70 whitespace-nowrap`}
+                >
+                  Tümü
+                </button>
+                {statuses.map((s: { id: number; name: string }) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setStatusFilter(s.id)}
+                    className={`bg-muted rounded px-4 py-1.5 text-sm font-medium ${statusFilter === s.id ? 'text-primary' : 'text-foreground'} hover:bg-muted/70 whitespace-nowrap`}
+                  >
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex-1 min-h-0 flex flex-col overflow-auto px-8 pb-8">
+              {(vehiclesLoading || brandsLoading || modelsLoading || colorsLoading || branchesLoading || statusesLoading) ? (
+                <DataTableSkeleton columnCount={7} rowCount={8} />
+              ) : (
+                <DataTable table={table} />
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="import" className="px-8 pb-8">
+            <VehicleImportExport />
+          </TabsContent>
+        </Tabs>
+        
         {detailVehicle && (
           <VehicleDetailModal
             vehicle={detailVehicle}
@@ -149,7 +180,7 @@ const VehicleList: React.FC = () => {
         )}
       </div>
     </ProtectedRoute>
-  ), [vehicles, debouncedSearch, statusFilter, detailVehicle, vehiclesLoading, brandsLoading, modelsLoading, colorsLoading, branchesLoading, statusesLoading, loadingId]);
+  ), [vehicles, debouncedSearch, statusFilter, detailVehicle, vehiclesLoading, brandsLoading, modelsLoading, colorsLoading, branchesLoading, statusesLoading, loadingId, activeTab]);
   
   return renderedContent;
 };

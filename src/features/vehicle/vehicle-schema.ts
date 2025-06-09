@@ -5,7 +5,7 @@ import { z } from 'zod';
 // Form state ve step wizard için draft ID'yi tutmak üzere opsiyonel id alanı eklendi
 export const vehicleSchema = z.object({
   id: z.number().optional().nullable(),
-  plate_number: z.string().min(2, 'Plaka zorunlu'),
+  plate_number: z.string().optional().nullable(),
   is_draft: z.boolean().optional(),
   branch_id: z.number().optional().nullable(),
   vehicle_type_id: z.number().optional().nullable(),
@@ -21,7 +21,7 @@ export const vehicleSchema = z.object({
   color_id: z.number().optional().nullable(),
   engine_power_hp: z.number().optional().nullable(),
   engine_volume_cc: z.number().optional().nullable(),
-  chassis_number: z.string().optional().nullable(),
+  chassis_number: z.string().min(1, 'Şasi numarası zorunludur'),
   engine_number: z.string().optional().nullable(),
   first_registration_date: z.string().optional().nullable(),
   registration_document_number: z.string().optional().nullable(),
@@ -37,7 +37,8 @@ export const vehicleSchema = z.object({
   current_status: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   current_client_company_id: z.number().optional().nullable(),
-  vehicle_status_id: z.number().optional().nullable()
+  vehicle_status_id: z.number().optional().nullable(),
+  tsb_code: z.string().optional().nullable()
 });
 
 

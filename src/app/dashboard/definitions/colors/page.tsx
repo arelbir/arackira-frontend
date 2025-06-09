@@ -1,63 +1,85 @@
 'use client';
+
 import React, { useState } from 'react';
-import ColorList from '@/features/definitions/colors/color-list';
-import ColorForm from '@/features/definitions/colors/color-form';
-import { useColor } from '@/features/definitions/colors/useColor';
-import type { Color } from '@/features/definitions/colors/useColor';
+import { ColorList, ColorForm, ColorActionsMenu, ColorDeleteConfirmDialog } from '@/features/definitions/colors/components';
+import { useAllColors, useColorMutations } from '@/features/definitions/colors/use-colors';
+import DefinitionListToolbar from '@/features/definitions/DefinitionListToolbar';
+import type { Color } from '@/features/definitions/colors/color-schema';
 
 export default function ColorDefinitionsPage() {
-  const {
-    colors,
-    loading,
-    error,
-    addColor,
-    editColor,
-    removeColor,
-    setError
-  } = useColor();
+  // State yönetimi
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedColor, setSelectedColor] = useState<Color | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  
+  // React Query hooks
+  const { data: colors = [], isLoading } = useAllColors();
+  const { addColor, updateColor, deleteColor, isPending } = useColorMutations();
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingColor, setEditingColor] = useState<Color | null>(null);
+  // Form açma/kapama işlemleri
+  const handleOpenForm = (color?: Color) => {
+    setSelectedColor(color || null);
+    setIsFormOpen(true);
+  };
 
-  const handleAdd = () => {
-    setEditingColor(null);
-    setModalOpen(true);
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setSelectedColor(null);
   };
-  const handleEdit = (color: Color) => {
-    setEditingColor(color);
-    setModalOpen(true);
-  };
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setEditingColor(null);
-    setError(null);
-  };
-  const handleSubmit = async (data: { name: string; description?: string }) => {
-    if (editingColor) {
-      await editColor(editingColor.id, data);
+
+  // Form gönderim işlemi
+  const handleSubmitForm = (data: { name: string; description?: string }) => {
+    if (selectedColor) {
+      updateColor({ id: selectedColor.id, data });
     } else {
-      await addColor(data);
+      addColor(data);
     }
-    setModalOpen(false);
-    setEditingColor(null);
+    setIsFormOpen(false);
   };
+
+  // Silme dialogu açma/kapama işlemleri
+  const handleDeleteClick = (color: Color) => {
+    setSelectedColor(color);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedColor) {
+      deleteColor(selectedColor.id);
+    }
+    setIsDeleteDialogOpen(false);
+  };
+  
   return (
-    <div className='container mx-auto py-8 w-full'>
+    <div className="container mx-auto py-6 space-y-6">
+
       <ColorList
-        colors={colors}
-        loading={loading}
-        onAdd={handleAdd}
-        onEdit={handleEdit}
-        onDelete={color => removeColor(color.id)}
+        items={colors} 
+        loading={isLoading}
+        onAdd={() => handleOpenForm()}
+        onEdit={handleOpenForm}
+        onDelete={handleDeleteClick}
       />
+
       <ColorForm
-        open={modalOpen}
-        onClose={handleCloseModal}
-        onSubmit={handleSubmit}
-        initialData={editingColor ? { name: editingColor.name, description: editingColor.description } : undefined}
-        loading={loading}
+        open={isFormOpen}
+        onClose={handleCloseForm}
+        onSubmit={handleSubmitForm}
+        initialData={selectedColor ? {
+          name: selectedColor.name,
+          description: selectedColor.description
+        } : undefined}
+        loading={isPending}
       />
-      {error && <div className='text-destructive mt-4'>{error}</div>}
+
+      <ColorDeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen} 
+        itemToDelete={selectedColor}
+        isDeleting={isPending}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setIsDeleteDialogOpen(false)}
+      />
     </div>
   );
 }

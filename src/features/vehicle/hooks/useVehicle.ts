@@ -1,77 +1,101 @@
 "use client"
 
+import { useCallback, useState } from 'react';
+import { Vehicle } from '../vehicleService'; 
+import { 
+  useAllVehiclesQuery, 
+  useVehicleMutations
+} from './use-vehicles-query';
 
-import { useCallback, useEffect, useState } from 'react';
-// NOT: Aşağıdaki servis fonksiyonları gerçek API'nize göre güncellenmeli
-import { getAllVehicles, createVehicle, updateVehicle, Vehicle, deleteDraftVehicle, deleteVehicle } from '../vehicleService'; // deleteVehicle eklendi
-
+/**
+ * React Query ile güçlendirilmiş useVehicle hook'u
+ * Geriye uyumlu API sağlar, böylece mevcut bileşenler etkilenmez
+ */
 export function useVehicle() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [loading, setLoading] = useState(false);
+  // React Query hook'larını kullan
+  const { 
+    data: queryVehicles, 
+    isLoading: queryLoading, 
+    error: queryError, 
+    refetch 
+  } = useAllVehiclesQuery();
+  
+  const {
+    addVehicle: mutateAddVehicle,
+    updateVehicle: mutateUpdateVehicle,
+    deleteVehicle: mutateDeleteVehicle,
+    deleteDraftVehicle: mutateDeleteDraftVehicle,
+    isAddingVehicle,
+    isUpdatingVehicle,
+    isDeletingVehicle,
+    isDeletingDraftVehicle
+  } = useVehicleMutations();
+
+  // Manuel error state'i (React Query error'unu izlemek için)
   const [error, setError] = useState<string | null>(null);
+  
+  // React Query hata durumlarını manuel state'e senkronize et
+  if (queryError && !error) {
+    setError((queryError as Error).message || 'Bir hata oluştu');
+  }
 
+  // fetchVehicles - geriye uyumlu API 
   const fetchVehicles = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
-      const data = await getAllVehicles();
-      setVehicles(data);
+      await refetch();
+      setError(null);
+      return true;
     } catch (e: any) {
       setError(e.message);
+      return false;
     }
-    setLoading(false);
-  }, []);
+  }, [refetch]);
 
+  // addVehicle - geriye uyumlu API
   const addVehicle = useCallback(async (data: Omit<Vehicle, 'id'>) => {
-    setLoading(true);
-    setError(null);
     try {
-      const newVehicle = await createVehicle(data);
-      setVehicles((prev) => [...prev, newVehicle]);
+      setError(null);
+      mutateAddVehicle(data as Partial<Vehicle>);
+      return true; 
     } catch (e: any) {
       setError(e.message);
+      return false;
     }
-    setLoading(false);
-  }, []);
+  }, [mutateAddVehicle]);
 
+  // editVehicle - geriye uyumlu API
   const editVehicle = useCallback(async (id: number, data: Partial<Vehicle>) => {
-    setLoading(true);
-    setError(null);
     try {
-      const updated = await updateVehicle(id, data);
-      setVehicles((prev) => prev.map(v => (v.id === id ? updated : v)));
+      setError(null);
+      mutateUpdateVehicle({ id, data });
+      return true;
     } catch (e: any) {
       setError(e.message);
+      return false;
     }
-    setLoading(false);
-  }, []);
+  }, [mutateUpdateVehicle]);
 
-  // Hem normal hem taslak araç silme destekleniyor. isDraft parametresi ile ayrım yapılır.
+  // removeVehicle - geriye uyumlu API
   const removeVehicle = useCallback(async (id: number, isDraft: boolean) => {
-    setLoading(true);
-    setError(null);
     try {
+      setError(null);
       if (isDraft) {
-        await deleteDraftVehicle(id);
+        mutateDeleteDraftVehicle(id);
       } else {
-        await deleteVehicle(id);
+        mutateDeleteVehicle(id);
       }
-      setVehicles((prev) => prev.filter(v => v.id !== id));
+      return true;
     } catch (e: any) {
       setError(e.message);
+      return false;
     }
-    setLoading(false);
-  }, []);
+  }, [mutateDeleteDraftVehicle, mutateDeleteVehicle]);
 
-  useEffect(() => {
-    fetchVehicles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  // Mevcut arayüzü koruyarak React Query avantajlarını kullanıyoruz
   return {
-    vehicles,
-    loading,
-    error,
+    vehicles: queryVehicles || [],
+    loading: queryLoading || isAddingVehicle || isUpdatingVehicle || isDeletingVehicle || isDeletingDraftVehicle,
+    error, 
     fetchVehicles,
     addVehicle,
     editVehicle,

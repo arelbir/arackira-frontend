@@ -58,7 +58,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshUser = async () => {
     setLoading(true);
     try {
-      const me = await getMe();
+      // Token'ı getMe fonksiyonuna ilet
+      const me = await getMe(token);
       setUser(me);
       setError(null);
     } catch (err: any) {

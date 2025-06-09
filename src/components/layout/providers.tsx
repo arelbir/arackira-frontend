@@ -1,9 +1,9 @@
 'use client';
 
+import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/context/AuthContext';
 import { VehicleProvider } from '@/features/vehicle/VehicleContext';
 import { BrandProvider } from '@/features/definitions/brands/BrandContext';
-import { ModelProvider } from '@/features/definitions/models/ModelContext';
 import { ColorProvider } from '@/features/definitions/colors/ColorContext';
 import { BranchProvider } from '@/features/definitions/branches/BranchContext';
 import { VehicleStatusProvider } from '@/features/vehicle/form/VehicleStatusContext';
@@ -20,10 +20,10 @@ export default function Providers({
   const { resolvedTheme } = useTheme();
 
   return (
-    <ActiveThemeProvider initialTheme={activeThemeValue}>
-      <AuthProvider>
-        <BrandProvider>
-          <ModelProvider>
+    <QueryProvider>
+      <ActiveThemeProvider initialTheme={activeThemeValue}>
+        <AuthProvider>
+          <BrandProvider>
             <ColorProvider>
               <BranchProvider>
                 <VehicleStatusProvider>
@@ -33,9 +33,9 @@ export default function Providers({
                 </VehicleStatusProvider>
               </BranchProvider>
             </ColorProvider>
-          </ModelProvider>
-        </BrandProvider>
-      </AuthProvider>
-    </ActiveThemeProvider>
+          </BrandProvider>
+        </AuthProvider>
+      </ActiveThemeProvider>
+    </QueryProvider>
   );
 }

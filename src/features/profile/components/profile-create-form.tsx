@@ -31,7 +31,7 @@ import { IconAlertTriangle, IconTrash } from '@tabler/icons-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import { updateProfile } from '@/services/profileService';
+import { updateProfile } from '@/lib/profile-service';
 
 interface ProfileFormType {
   initialData: any | null;

@@ -2,20 +2,20 @@
 'use client';
 import React, { useState } from 'react';
 import DefinitionListToolbar from '../DefinitionListToolbar';
-import TransmissionActionsMenu from './transmission-actions-menu';
-import type { Transmission } from './transmissionService';
+import useTransmissionActionsMenu from './useTransmission-actions-menu';
+import type { useTransmission } from './useTransmission';
 
-interface TransmissionListProps {
-  transmissions: Transmission[];
+interface useTransmissionListProps {
+  useTransmissions: useTransmission[];
   loading: boolean;
   onAdd: () => void;
-  onEdit: (transmission: Transmission) => void;
-  onDelete: (transmission: Transmission) => void;
+  onEdit: (useTransmission: useTransmission) => void;
+  onDelete: (useTransmission: useTransmission) => void;
 }
 
-const TransmissionList: React.FC<TransmissionListProps> = ({ transmissions, loading, onAdd, onEdit, onDelete }) => {
+const useTransmissionList: React.FC<useTransmissionListProps> = ({ useTransmissions, loading, onAdd, onEdit, onDelete }) => {
   const [search, setSearch] = useState('');
-  const filtered = transmissions.filter(t =>
+  const filtered = useTransmissions.filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase()) ||
     (t.description && t.description.toLowerCase().includes(search.toLowerCase()))
   );
@@ -43,12 +43,12 @@ const TransmissionList: React.FC<TransmissionListProps> = ({ transmissions, load
             ) : filtered.length === 0 ? (
               <tr><td colSpan={3} className='text-center py-4 text-muted'>Kayıt bulunamadı.</td></tr>
             ) : (
-              filtered.map(transmission => (
-                <tr key={transmission.id} className='border-b'>
-                  <td className='py-2 px-4'>{transmission.name}</td>
-                  <td className='py-2 px-4'>{transmission.description || '-'}</td>
+              filtered.map(useTransmission => (
+                <tr key={useTransmission.id} className='border-b'>
+                  <td className='py-2 px-4'>{useTransmission.name}</td>
+                  <td className='py-2 px-4'>{useTransmission.description || '-'}</td>
                   <td className='py-2 px-4 text-right'>
-                    <TransmissionActionsMenu transmission={transmission} onEdit={onEdit} onDelete={onDelete} />
+                    <useTransmissionActionsMenu useTransmission={useTransmission} onEdit={onEdit} onDelete={onDelete} />
                   </td>
                 </tr>
               ))
@@ -60,4 +60,4 @@ const TransmissionList: React.FC<TransmissionListProps> = ({ transmissions, load
   );
 };
 
-export default TransmissionList;
+export default useTransmissionList;

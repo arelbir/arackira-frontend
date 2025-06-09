@@ -1,15 +1,9 @@
 // src/services/api.ts
-export async function apiFetch(input: RequestInfo, init: RequestInit = {}) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  // headers'ı Record<string, string> olarak başlat
-  const headers: Record<string, string> = {
-    ...(init.headers ? (init.headers as Record<string, string>) : {})
-  };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  return fetch(input, {
-    ...init,
-    headers,
-    credentials: 'include', // Cookie de gitmeye devam etsin
-  });
-}
+// API client'i kullanarak uyumluluk için wrapper
+import { apiFetch as newApiFetch } from '@/lib/api-client';
+
+export const apiFetch = newApiFetch;
+
+// Not: Bu dosya geriye dönük uyumluluk için kullanılıyor.
+// Yeni servisler için doğrudan '@/lib/api-client' içinden apiRequest kullanın.
 

@@ -1,10 +1,21 @@
 // src/services/authService.ts
+import { z } from 'zod';
+import { apiRequest } from '@/lib/api-client';
 
-export interface AuthUser {
-  id: number;
-  username: string;
-  role: string;
-}
+// Auth User için Zod şeması
+export const AuthUserSchema = z.object({
+  id: z.number(),
+  username: z.string(),
+  role: z.string().optional()
+});
+
+export type AuthUser = z.infer<typeof AuthUserSchema>;
+
+// Auth yanıtı için şema
+const AuthResponseSchema = z.object({
+  user: AuthUserSchema,
+  token: z.string().optional()
+});
 
 const API_BASE = `${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000'}/api/users`;
 
@@ -12,17 +23,24 @@ export async function login(
   username: string,
   password: string
 ): Promise<AuthUser> {
-  const res = await apiFetch(`${API_BASE}/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Giriş başarısız.');
-  if (data.token) {
-    localStorage.setItem('token', data.token);
+  try {
+    const data = await apiRequest<z.infer<typeof AuthResponseSchema>>({
+      url: `${API_BASE}/login`,
+      method: 'POST',
+      body: { username, password },
+      schema: AuthResponseSchema,
+      requiresAuth: false // Giriş için auth gerekmez
+    });
+    
+    // Token'i sakla (client-side)
+    if (data.token && typeof window !== 'undefined') {
+      localStorage.setItem('token', data.token);
+    }
+    
+    return data.user;
+  } catch (error: any) {
+    throw new Error(error.message || 'Giriş başarısız.');
   }
-  return data.user;
 }
 
 export async function register(
@@ -30,57 +48,74 @@ export async function register(
   password: string,
   role?: string
 ): Promise<AuthUser> {
-  const res = await apiFetch(`${API_BASE}/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password, role })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Kayıt başarısız.');
-  if (data.token) {
-    localStorage.setItem('token', data.token);
+  try {
+    const data = await apiRequest<z.infer<typeof AuthResponseSchema>>({
+      url: `${API_BASE}/register`,
+      method: 'POST',
+      body: { username, password, role },
+      schema: AuthResponseSchema,
+      requiresAuth: false // Kayıt için auth gerekmez
+    });
+    
+    // Token'i sakla (client-side)
+    if (data.token && typeof window !== 'undefined') {
+      localStorage.setItem('token', data.token);
+    }
+    
+    return data.user;
+  } catch (error: any) {
+    throw new Error(error.message || 'Kayıt başarısız.');
   }
-  return data.user;
 }
 
-export async function logout(): Promise<void> {
-  await apiFetch(`${API_BASE}/logout`, {
-    method: 'POST'
-  });
-  localStorage.removeItem('token');
+export async function logout(token?: string | null): Promise<void> {
+  try {
+    await apiRequest({
+      url: `${API_BASE}/logout`,
+      method: 'POST',
+      token
+    });
+    
+    // Token'i kaldır (client-side)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+    }
+  } catch (error) {
+    console.error('Logout error:', error);
+    // Çıkış yaparken hata olsa bile token'i kaldır
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+    }
+  }
 }
-
-import { apiFetch } from './api';
 
 export async function requestPasswordReset(email: string): Promise<void> {
-  const res = await apiFetch(`${API_BASE}/forgot-password`, {
+  await apiRequest({
+    url: `${API_BASE}/request-password-reset`,
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email })
+    body: { email },
+    requiresAuth: false
   });
-  if (!res.ok) {
-    const data = await res.json();
-    throw new Error(data.error || 'Şifre sıfırlama e-postası gönderilemedi.');
-  }
 }
 
-export async function resetPassword(token: string|null, newPassword: string): Promise<void> {
-  const res = await apiFetch(`${API_BASE}/reset-password`, {
+export async function resetPassword(resetToken: string|null, newPassword: string): Promise<void> {
+  await apiRequest({
+    url: `${API_BASE}/reset-password`,
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token, newPassword })
+    body: { token: resetToken, newPassword },
+    requiresAuth: false
   });
-  if (!res.ok) {
-    const data = await res.json();
-    throw new Error(data.error || 'Şifre güncellenemedi.');
-  }
 }
 
-
-export async function getMe(): Promise<AuthUser | null> {
-  const res = await apiFetch(`${API_BASE}/me`);
-  if (res.status === 401) return null;
-  const data = await res.json();
-  if (!res.ok) return null;
-  return data;
+export async function getMe(token?: string | null): Promise<AuthUser | null> {
+  try {
+    return await apiRequest<AuthUser>({
+      url: `${API_BASE}/me`,
+      schema: AuthUserSchema,
+      token
+    });
+  } catch (error) {
+    // Oturum açılmamış veya token süresi dolmuş olabilir
+    return null;
+  }
 }

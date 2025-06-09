@@ -1,63 +1,104 @@
-import React from "react";
+import React, { Suspense, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import VehicleGeneralInfoTab from "./tabs/VehicleGeneralInfoTab";
-import VehicleOtherInfoTab from "./tabs/VehicleOtherInfoTab";
-import VehicleInsuranceTab from "./tabs/VehicleInsuranceTab";
+import { getVisibleTabs, loadTabComponent, canNavigateToTab, canLeaveTab } from "./registry/VehicleTabsRegistry";
+import { ErrorBoundary } from "./common/ErrorBoundary";
+import { useVehicleContext } from "./context/VehicleContext";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Spinner } from "@/components/ui/spinner";
+import { UseFormReturn } from "react-hook-form";
+import { VehicleFormValues } from "./schemas/vehicleSchema";
+
+// Tab hata mesajları için tip
+type TabErrorType = Record<string, string>;
 
 interface VehicleCreateTabsProps {
-  form: any; // react-hook-form instance
+  form: UseFormReturn<VehicleFormValues>;
 }
 
-const tabList = [
-  { value: "arac-bilgileri", label: "Araç Bilgileri" },
-  { value: "diger-bilgiler", label: "Diğer Bilgiler" },
-  { value: "fiyat-tedarikci", label: "Fiyat ve Tedarikçi" },
-  { value: "sigorta-muayene", label: "Sigorta ve Muayene" },
-  { value: "lastik", label: "Lastik" },
-  { value: "bakim-masraf", label: "Bakım ve Masraflar" },
-  { value: "hgs-ceza", label: "HGS ve Ceza" },
-  { value: "arac-kullanim", label: "Araç Kullanımları" },
-];
-
 export default function VehicleCreateTabs({ form }: VehicleCreateTabsProps) {
+  const visibleTabs = getVisibleTabs();
+  const { activeTabId, setActiveTabId } = useVehicleContext();
+  const [tabErrors, setTabErrors] = useState<TabErrorType>({});
+  
+  // Tab değiştiğinde çağrılır
+  const handleTabChange = (tabId: string) => {
+    // Tab geçişi için form değerlerini ve zorunlu alanları kontrol et
+    const formValues = form.getValues();
+    
+    // 1. Mevcut tabdan ayrılmaya izin var mı kontrol et
+    if (!canLeaveTab(activeTabId, formValues)) {
+      // Mevcut tabdan ayrılmadan önce doldurulması gereken alanlar var
+      setTabErrors(prev => ({
+        ...prev,
+        [activeTabId]: "Bu tabdan ayrılmadan önce zorunlu alanları doldurun."
+      }));
+      return;
+    }
+    
+    // 2. Hedef taba gidilmesine izin var mı kontrol et
+    if (canNavigateToTab(tabId, formValues)) {
+      setActiveTabId(tabId);
+      // Hata mesajını temizle
+      if (tabErrors[tabId]) {
+        setTabErrors(prev => {
+          const newErrors = {...prev};
+          delete newErrors[tabId];
+          return newErrors;
+        });
+      }
+    } else {
+      // Geçiş izni yoksa hata mesajı göster
+      setTabErrors(prev => ({
+        ...prev,
+        [tabId]: "Bu sekmeye geçmek için önce zorunlu alanları doldurun."
+      }));
+    }
+  };
+
   return (
-    <Tabs defaultValue="genel" className="w-full">
+    <Tabs value={activeTabId} className="w-full" onValueChange={handleTabChange}>
       <div className="flex w-full justify-center mt-6">
         <TabsList className="text-muted-foreground h-9 w-fit items-center justify-center mb-4 bg-muted rounded-lg p-1 flex gap-2 shadow-sm">
-        <TabsTrigger value="genel" className="data-[state=active]:bg-primary data-[state=active]:text-white px-4 py-2 rounded transition">Genel Bilgiler</TabsTrigger>
-        <TabsTrigger value="diger-bilgiler" className="data-[state=active]:bg-primary data-[state=active]:text-white px-4 py-2 rounded transition">Diğer Bilgiler</TabsTrigger>
-        <TabsTrigger value="insurance-kasko" className="data-[state=active]:bg-primary data-[state=active]:text-white px-4 py-2 rounded transition">Sigorta & Kasko</TabsTrigger>
-        {/* Diğer TabsTriggerlar burada */}
-      </TabsList>
+          {visibleTabs.map((tab) => (
+            <TabsTrigger 
+              key={tab.id}
+              value={tab.id} 
+              className="data-[state=active]:bg-primary data-[state=active]:text-white px-4 py-2 rounded transition"
+            >
+              {tab.icon && <span className="mr-1">{tab.icon}</span>}
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
       </div>
-      <TabsContent value="genel">
-        <VehicleGeneralInfoTab form={form} />
-      </TabsContent>
-      <TabsContent value="diger-bilgiler">
-        <VehicleOtherInfoTab form={form} />
-      </TabsContent>
-      <TabsContent value="insurance-kasko">
-        {/* vehicleId prop'unu uygun şekilde geçirmeniz gerekir! */}
-        <VehicleInsuranceTab form={form} vehicleId={form.getValues('id') || 0} />
-      </TabsContent>
-      <TabsContent value="fiyat-tedarikci">
-        <div className="p-6 text-muted-foreground">Fiyat ve tedarikçi ile ilgili alanlar burada olacak.</div>
-      </TabsContent>
-      <TabsContent value="sigorta-muayene">
-        <div className="p-6 text-muted-foreground">Sigorta ve muayene bilgileri burada olacak.</div>
-      </TabsContent>
-      <TabsContent value="lastik">
-        <div className="p-6 text-muted-foreground">Lastik ile ilgili bilgiler burada olacak.</div>
-      </TabsContent>
-      <TabsContent value="bakim-masraf">
-        <div className="p-6 text-muted-foreground">Bakım ve masraf kayıtları burada olacak.</div>
-      </TabsContent>
-      <TabsContent value="hgs-ceza">
-        <div className="p-6 text-muted-foreground">HGS ve ceza bilgileri burada olacak.</div>
-      </TabsContent>
-      <TabsContent value="arac-kullanim">
-        <div className="p-6 text-muted-foreground">Araç kullanım geçmişi burada olacak.</div>
-      </TabsContent>
+      
+      {tabErrors[activeTabId] && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>Zorunlu alanlar eksik</AlertTitle>
+          <AlertDescription>{tabErrors[activeTabId]}</AlertDescription>
+        </Alert>
+      )}
+      
+      {visibleTabs.map((tab) => {
+        const TabComponent = loadTabComponent(tab.id);
+        
+        return (
+          <TabsContent key={tab.id} value={tab.id}>
+            <ErrorBoundary>
+              <Suspense fallback={
+                <div className="flex justify-center items-center p-8 min-h-[300px] border rounded-lg border-dashed">
+                  <div className="flex flex-col items-center gap-2">
+                    <Spinner size="lg" />
+                    <p className="text-sm text-muted-foreground">Sekme yükleniyor...</p>
+                  </div>
+                </div>
+              }>
+                {TabComponent && <TabComponent form={form} />}
+              </Suspense>
+            </ErrorBoundary>
+          </TabsContent>
+        );
+      })}
     </Tabs>
   );
 }

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import FormInputField from "../form/FormInputField";
-import FormSelectField from "../form/FormSelectField";
-import FormDateField from "../form/FormDateField";
-import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/context/AuthContext";
+import { useForm, UseFormReturn } from "react-hook-form";
+import { BaseTabPanel } from "../common/BaseTabPanel";
+import FormController from "../common/FormController";
+import { FormFieldGroup } from "../common/FormFieldGroup";
+import { useAuth } from "@/hooks/useAuth";
 import { useInsurance, Insurance } from "../hooks/useInsurance";
+import { VehicleFormValues } from "../schemas/vehicleSchema";
 
 // Poliçe türü tipi
 interface InsuranceType {
@@ -29,13 +29,13 @@ interface Currency {
 }
 
 
-interface Props {
-  form: any; // Ana araç formu
+interface VehicleInsuranceTabProps {
+  form: UseFormReturn<VehicleFormValues>;
   vehicleId: number;
 }
 
 
-const VehicleInsuranceTab: React.FC<Props> = ({ form, vehicleId }) => {
+const VehicleInsuranceTab: React.FC<VehicleInsuranceTabProps> = ({ form, vehicleId }) => {
   const { token } = useAuth();
   const safeToken = token ?? '';
   const { insurances, loading, error, fetchInsurances, addInsurance } = useInsurance(safeToken);
@@ -112,18 +112,21 @@ const VehicleInsuranceTab: React.FC<Props> = ({ form, vehicleId }) => {
   };
 
   return (
-    <Card>
-      <CardContent>
-        <div className="mb-6 flex items-center justify-between">
-          <div className="text-lg font-semibold">Sigorta & Kasko Poliçeleri</div>
-          <button
-            type="button" 
-            className="bg-primary text-white px-4 py-1.5 rounded hover:bg-primary/90"
-            onClick={() => setShowForm(v => !v)}
-          >
-            {showForm ? "Kapat" : "Yeni Poliçe"}
-          </button>
-        </div>
+    <BaseTabPanel
+      form={form}
+      title="Sigorta & Kasko"
+      breadcrumb={["Araç", "Sigorta & Kasko"]}
+      columns={1}
+      action={
+        <button
+          type="button" 
+          className="bg-primary text-white px-4 py-1.5 rounded hover:bg-primary/90"
+          onClick={() => setShowForm(v => !v)}
+        >
+          {showForm ? "Kapat" : "Yeni Poliçe"}
+        </button>
+      }
+    >
         {/* Liste */}
         <div className="mb-8">
           {loading ? (
@@ -244,119 +247,108 @@ const VehicleInsuranceTab: React.FC<Props> = ({ form, vehicleId }) => {
         </div>
         {/* Form - Form etiketini kullanmıyoruz, manuel olarak göndereceğiz */}
         {showForm && (
-          <div className="border p-4 rounded bg-card">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              <Controller
-                control={control}
+          <div className="border p-4 rounded bg-card mt-6">
+            <FormFieldGroup title="Poliçe Bilgileri" columns={3}>
+              <FormController
+                form={{ control, formState: { errors } }}
                 name="insurance_type_id"
-                render={({ field }) => (
-                  <FormSelectField
-                    {...field}
-                    label="Poliçe Türü"
-                    options={
-                      insuranceTypes?.map((type: any) => ({ value: type.id, label: type.name })) || []
-                    }
-                    error={errors.insurance_type_id}
-                    placeholder={loadingInsuranceTypes ? "Yükleniyor..." : "Seçiniz"}
-                    disabled={loadingInsuranceTypes}
-                  />
-                )}
+                label="Poliçe Türü"
+                fieldType="select"
+                options={insuranceTypes?.map((type: any) => ({ value: type.id, label: type.name })) || []}
+                placeholder={loadingInsuranceTypes ? "Yükleniyor..." : "Seçiniz"}
+                disabled={loadingInsuranceTypes}
               />
-              <Controller
-                control={control}
+              
+              <FormController
+                form={{ control, formState: { errors } }}
+                name="insurance_company_id"
+                label="Sigorta Şirketi"
+                fieldType="select"
+                options={insuranceCompanies?.map((comp: any) => ({ value: comp.id, label: comp.name })) || []}
+                placeholder={loadingCompanies ? "Yükleniyor..." : "Seçiniz"}
+                disabled={loadingCompanies}
+              />
+              
+              <FormController
+                form={{ control, formState: { errors } }}
                 name="policy_number"
-                render={({ field }) => (
-                  <FormInputField
-                    {...field}
-                    label="Poliçe No"
-                    error={errors.policy_number}
-                    placeholder="Poliçe numarası"
-                  />
-                )}
+                label="Poliçe No"
+                fieldType="input"
+                placeholder="Poliçe numarası"
               />
-              <Controller
-                control={control}
+            </FormFieldGroup>
+            
+            <FormFieldGroup title="Tarih Bilgileri" columns={3}>
+              <FormController
+                form={{ control, formState: { errors } }}
                 name="start_date"
-                render={({ field }) => (
-                  <FormDateField
-                    {...field}
-                    label="Başlangıç Tarihi"
-                    error={errors.start_date}
-                    placeholder="Başlangıç"
-                  />
-                )}
+                label="Başlangıç Tarihi"
+                fieldType="date"
+                placeholder="Başlangıç"
               />
-              <Controller
-                control={control}
+              
+              <FormController
+                form={{ control, formState: { errors } }}
                 name="end_date"
-                render={({ field }) => (
-                  <FormDateField
-                    {...field}
-                    label="Bitiş Tarihi"
-                    error={errors.end_date}
-                    placeholder="Bitiş"
-                  />
-                )}
+                label="Bitiş Tarihi"
+                fieldType="date"
+                placeholder="Bitiş"
               />
-              <Controller
-                control={control}
+              
+              <FormController
+                form={{ control, formState: { errors } }}
+                name="policy_date"
+                label="Poliçe Tarihi"
+                fieldType="date"
+                placeholder="Poliçe tarihi"
+              />
+            </FormFieldGroup>
+            
+            <FormFieldGroup title="Ödeme Bilgileri" columns={3}>
+              <FormController
+                form={{ control, formState: { errors } }}
                 name="amount"
-                render={({ field }) => (
-                  <FormInputField
-                    {...field}
-                    label="Tutar"
-                    type="number"
-                    error={errors.amount}
-                    placeholder="Tutar"
-                  />
-                )}
+                label="Tutar"
+                fieldType="input"
+                type="number"
+                placeholder="Tutar"
               />
-              <Controller
-                control={control}
+              
+              <FormController
+                form={{ control, formState: { errors } }}
                 name="currency"
-                render={({ field }) => (
-                  <FormSelectField
-                    {...field}
-                    label="Para Birimi"
-                    options={
-                      currencies?.map((cur: any) => ({ value: String(cur.id), label: cur.code || cur.name })) || []
-                    }
-                    error={errors.currency}
-                    placeholder={loadingCurrencies ? "Yükleniyor..." : "Seçiniz"}
-                    disabled={loadingCurrencies}
-                  />
-                )}
+                label="Para Birimi"
+                fieldType="select"
+                options={currencies?.map((cur: any) => ({ value: String(cur.id), label: cur.code || cur.name })) || []}
+                placeholder={loadingCurrencies ? "Yükleniyor..." : "Seçiniz"}
+                disabled={loadingCurrencies}
               />
-              <Controller
-                control={control}
+              
+              <FormController
+                form={{ control, formState: { errors } }}
                 name="description"
-                render={({ field }) => (
-                  <FormInputField
-                    {...field}
-                    label="Açıklama"
-                    error={errors.description}
-                    placeholder="Açıklama"
-                  />
-                )}
+                label="Açıklama"
+                fieldType="input"
+                placeholder="Açıklama"
               />
-              <div className="col-span-full flex justify-end gap-2 mt-4">
-                <button
-                  type="button" 
-                  className="bg-primary text-white px-6 py-2 rounded hover:bg-primary/90"
-                  onClick={handleInsuranceSubmit}
-                >Kaydet</button>
-                <button
-                  type="button"
-                  className="bg-muted text-foreground px-6 py-2 rounded hover:bg-muted/70"
-                  onClick={() => setShowForm(false)}
-                >İptal</button>
-              </div>
+            </FormFieldGroup>
+            
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                type="button" 
+                className="bg-primary text-white px-6 py-2 rounded hover:bg-primary/90"
+                onClick={handleInsuranceSubmit}
+              >Kaydet</button>
+              <button
+                type="button"
+                className="bg-muted text-foreground px-6 py-2 rounded hover:bg-muted/70"
+                onClick={() => setShowForm(false)}
+              >İptal</button>
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
-  );
-};
+      </BaseTabPanel>
+    );
+  };
 
 export default VehicleInsuranceTab;

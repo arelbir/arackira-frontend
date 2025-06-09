@@ -1,65 +1,74 @@
 // Araç Statüsü işlemleri için custom hook
 import { useCallback, useEffect, useState } from 'react';
-import { getAllVehicleStatuses, createVehicleStatus, updateVehicleStatus, deleteVehicleStatus, VehicleStatus } from './vehicleStatusService';
-import { useAuth } from '@/hooks/useAuth';
+import { getAllVehicleStatuses, createVehicleStatus, updateVehicleStatus, deleteVehicleStatus, VehicleStatus } from './vehicle-status-service';
+import { useAuth } from '@/context/AuthContext';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 
 export function useVehicleStatuses() {
   const [vehicleStatuses, setVehicleStatuses] = useState<VehicleStatus[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { token } = useAuth();
+  const { token } = useAuth(); // AuthContext'ten token al
 
   const fetchVehicleStatuses = useCallback(async () => {
+    if (!token) return; // Token yoksa API çağrısı yapma
     setLoading(true);
     setError(null);
     try {
-      if (!token) throw new Error('Kullanıcı oturumu bulunamadı');
       const data = await getAllVehicleStatuses(token);
       setVehicleStatuses(data);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (err: any) {
+      setError(err.message || 'Araç statüsleri alınamadı');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [token]);
+  }, [token]);  // Token değiştiğinde yeniden çalıştır
 
-  const addVehicleStatus = useCallback(async (data: Omit<VehicleStatus, 'id'>) => {
+  const addVehicleStatus = useCallback(async (data: Omit<VehicleStatus, 'id' | 'created_at'>) => {
+    if (!token) return; // Token yoksa API çağrısı yapma
     setLoading(true);
     setError(null);
     try {
-      if (!token) throw new Error('Kullanıcı oturumu bulunamadı');
       const newVehicleStatus = await createVehicleStatus(data, token);
       setVehicleStatuses(prev => [...prev, newVehicleStatus]);
-    } catch (e: any) {
-      setError(e.message);
+      return newVehicleStatus;
+    } catch (err: any) {
+      setError(err.message || 'Araç statüsü eklenemedi');
+      throw err;
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [token]);
+  }, [token]);  // Token değiştiğinde yeniden çalıştır
 
-  const editVehicleStatus = useCallback(async (id: number, data: Omit<VehicleStatus, 'id'>) => {
+  const editVehicleStatus = useCallback(async (id: number, data: Partial<Omit<VehicleStatus, 'id' | 'created_at'>>) => {
     setLoading(true);
     setError(null);
     try {
-      if (!token) throw new Error('Kullanıcı oturumu bulunamadı');
       const updated = await updateVehicleStatus(id, data, token);
-      setVehicleStatuses(prev => prev.map(i => i.id === id ? updated : i));
-    } catch (e: any) {
-      setError(e.message);
+      setVehicleStatuses(prev => prev.map(s => s.id === id ? updated : s));
+      return updated;
+    } catch (err: any) {
+      setError(err.message || 'Araç statüsü güncellenemedi');
+      throw err;
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [token]);
+  }, [token]);  // Token değiştiğinde yeniden çalıştır
 
   const removeVehicleStatus = useCallback(async (id: number) => {
     setLoading(true);
     setError(null);
     try {
-      if (!token) throw new Error('Kullanıcı oturumu bulunamadı');
       await deleteVehicleStatus(id, token);
-      setVehicleStatuses(prev => prev.filter(i => i.id !== id));
-    } catch (e: any) {
-      setError(e.message);
+      setVehicleStatuses(prev => prev.filter(s => s.id !== id));
+      return true;
+    } catch (err: any) {
+      setError(err.message || 'Araç statüsü silinemedi');
+      throw err;
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [token]);
+  }, [token]);  // Token değiştiğinde yeniden çalıştır
 
   useEffect(() => {
     fetchVehicleStatuses();
@@ -72,8 +81,6 @@ export function useVehicleStatuses() {
     fetchVehicleStatuses,
     addVehicleStatus,
     editVehicleStatus,
-    removeVehicleStatus,
-    setVehicleStatuses,
-    setError
+    removeVehicleStatus
   };
 }

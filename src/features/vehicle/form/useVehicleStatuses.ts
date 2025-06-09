@@ -1,27 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { getAllVehicleStatuses, VehicleStatus } from '@/features/definitions/vehicle-statuses/vehicleStatusService';
+import { useAllVehicleStatuses } from '@/features/definitions/vehicle-statuses/use-vehicle-statuses';
+import { VehicleStatus } from '@/features/definitions/vehicle-statuses/vehicle-status-service';
 
 export function useVehicleStatuses() {
-  const [statuses, setStatuses] = useState<VehicleStatus[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // React Query hook'unu kullan
+  const {
+    data: statuses = [],
+    isLoading: loading,
+    error,
+    refetch
+  } = useAllVehicleStatuses();
 
-  useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-    if (!token) {
-      setError('Oturum bulunamadı');
-      setLoading(false);
-      return;
-    }
-    getAllVehicleStatuses(token)
-      .then(setStatuses)
-      .catch((e: any) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  React.useEffect(() => {
-    console.log('useVehicleStatuses state', { statuses, loading, error });
-  }, [statuses, loading, error]);
+  // Geriye uyumluluk için aynı arayüzü sağlıyoruz
+  // Ancak kullanımı opsiyonel olarak geliştirilmiş bir nesne içeren bir nesne döndürüyoruz
 
   return { statuses, loading, error };
 }
