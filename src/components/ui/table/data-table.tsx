@@ -80,7 +80,7 @@ export function DataTable<TData>({
                       colSpan={table.getAllColumns().length}
                       className='h-24 text-center'
                     >
-                      Sonuç bulunamadı.
+                      No results.
                     </TableCell>
                   </TableRow>
                 )}

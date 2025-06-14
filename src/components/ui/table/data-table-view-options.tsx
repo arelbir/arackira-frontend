@@ -50,7 +50,7 @@ export function DataTableViewOptions<TData>({
           className='ml-auto hidden h-8 lg:flex'
         >
           <Settings2 />
-          Görünüm
+          View
           <CaretSortIcon className='ml-auto opacity-50' />
         </Button>
       </PopoverTrigger>

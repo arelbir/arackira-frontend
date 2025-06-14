@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getDraftVehicles, deleteDraftVehicle, Vehicle } from './vehicleService';
 
 const VehicleDraftListPage: React.FC = () => {
@@ -39,8 +40,10 @@ const VehicleDraftListPage: React.FC = () => {
   };
 
   // Taslaktan devam et: draftId ile create sayfasına yönlendir
+  const router = useRouter();
+
   const handleContinue = (draftId: number) => {
-    window.location.href = `/vehicles/create?draftId=${draftId}`;
+    router.push(`/vehicles/create?draftId=${draftId}`);
   };
 
 

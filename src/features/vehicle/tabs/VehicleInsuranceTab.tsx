@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
+import { useAuth } from "@/hooks/useAuth";
+import { useParams } from "next/navigation";
+import { useInsurance, Insurance } from "../hooks/useInsurance";
+import { useAllInsuranceTypes } from "@/features/definitions/insurance-types/use-insurance-types";
+import { useAllCurrencies } from "@/features/definitions/currencies/use-currencies";
+import { useAllInsuranceCompanies } from "@/features/definitions/insurance-companies/use-insurance-companies";
 import { BaseTabPanel } from "../common/BaseTabPanel";
 import FormController from "../common/FormController";
 import { FormFieldGroup } from "../common/FormFieldGroup";
-import { useAuth } from "@/hooks/useAuth";
-import { useInsurance, Insurance } from "../hooks/useInsurance";
 import { VehicleFormValues } from "../schemas/vehicleSchema";
 
 // Poliçe türü tipi
@@ -39,18 +43,12 @@ const VehicleInsuranceTab: React.FC<VehicleInsuranceTabProps> = ({ form, vehicle
   const { token } = useAuth();
   const safeToken = token ?? '';
   const { insurances, loading, error, fetchInsurances, addInsurance } = useInsurance(safeToken);
-  const { insuranceTypes, loading: loadingInsuranceTypes, error: errorInsuranceTypes, fetchInsuranceTypes } = require('@/features/definitions/hooks').useInsuranceType(safeToken);
-  const { currencies, loading: loadingCurrencies, error: errorCurrencies, fetchCurrencies } = require('@/features/definitions/hooks').useCurrency(safeToken);
-  const { insuranceCompanies, loading: loadingCompanies, error: errorCompanies, fetchInsuranceCompanies } = require('@/features/definitions/hooks').useInsuranceCompany(safeToken);
+  const { data: insuranceTypes, isPending: loadingInsuranceTypes, error: errorInsuranceTypes } = useAllInsuranceTypes();
+  const { data: currencies, isPending: loadingCurrencies, error: errorCurrencies } = useAllCurrencies();
+  const { data: insuranceCompanies, isPending: loadingCompanies, error: errorCompanies } = useAllInsuranceCompanies();
   const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
-    if (token) {
-      fetchInsuranceTypes();
-      fetchCurrencies();
-      fetchInsuranceCompanies();
-    }
-  }, [token, fetchInsuranceTypes, fetchCurrencies, fetchInsuranceCompanies]);
+  // useEffect to fetch data is no longer needed as it's handled by the React Query hooks internally
 
   useEffect(() => {
     if (vehicleId) fetchInsurances(vehicleId);

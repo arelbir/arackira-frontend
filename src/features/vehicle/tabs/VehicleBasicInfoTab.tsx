@@ -2,8 +2,8 @@ import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useAuth } from "@/hooks/useAuth";
 import { useVehicleStatuses } from '@/features/definitions/vehicle-statuses/useVehicleStatuses';
-import { useBranch } from "@/features/definitions/branches/BranchContext";
-import { useSupplier } from "@/features/definitions/hooks";
+import { useAllBranches } from "@/features/definitions/branches/use-branches";
+//import { useSupplier } from "@/features/definitions/suppliers/use-supplier";
 import { BaseTabPanel } from "../common/BaseTabPanel";
 import FormController from "../common/FormController";
 import { FormFieldGroup } from "../common/FormFieldGroup";
@@ -18,8 +18,8 @@ const VehicleBasicInfoTab: React.FC<VehicleBasicInfoTabProps> = ({ form }) => {
 
   // --- Tanım hook'ları ---
   const { vehicleStatuses, loading: statusesLoading } = useVehicleStatuses();
-  const { branches, loading: loadingBranches } = useBranch();
-  const { suppliers, loading: loadingSuppliers } = useSupplier(token);
+  const { data: branches, isPending: loadingBranches } = useAllBranches();
+  //const { suppliers, loading: loadingSuppliers } = useSupplier(token);
 
   // --- Options ---
   const vehicleStatusOptions = (vehicleStatuses || []).map((s: { id: number; name: string }) => ({ label: s.name, value: s.id }));

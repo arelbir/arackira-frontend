@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { useInsurance } from "../../hooks/useInsurance";
+import { useAllInsuranceCompanies } from "@/features/definitions/insurance-companies/use-insurance-companies";
+import { useAllInsuranceTypes } from "@/features/definitions/insurance-types/use-insurance-types";
+import { useAllCurrencies } from "@/features/definitions/currencies/use-currencies";
 import InsuranceList from "./InsuranceList";
 import InsuranceForm from "./InsuranceForm";
 import { InsuranceType, InsuranceCompany, Currency } from "./utils/mappers";
@@ -24,37 +27,30 @@ const InsuranceTab: React.FC<InsuranceTabProps> = ({ form, vehicleId }) => {
   
   // Tanım hook'ları
   const { 
-    insuranceTypes, 
-    loading: loadingInsuranceTypes, 
-    error: errorInsuranceTypes, 
-    fetchInsuranceTypes 
-  } = require('@/features/definitions/hooks').useInsuranceType(safeToken);
+    data: insuranceTypes, 
+    isPending: loadingInsuranceTypes, 
+    error: errorInsuranceTypes 
+  } = useAllInsuranceTypes();
   
   const { 
-    currencies, 
-    loading: loadingCurrencies, 
-    error: errorCurrencies, 
-    fetchCurrencies 
-  } = require('@/features/definitions/hooks').useCurrency(safeToken);
+    data: currencies, 
+    isPending: loadingCurrencies, 
+    error: errorCurrencies 
+  } = useAllCurrencies();
   
   const { 
-    insuranceCompanies, 
-    loading: loadingCompanies, 
-    error: errorCompanies, 
-    fetchInsuranceCompanies 
-  } = require('@/features/definitions/hooks').useInsuranceCompany(safeToken);
+    data: insuranceCompanies, 
+    isPending: loadingCompanies, 
+    error: errorCompanies 
+  } = useAllInsuranceCompanies();
   
   // UI state
   const [showForm, setShowForm] = useState(false);
 
   // Veri çekme işlemleri
-  useEffect(() => {
-    if (token) {
-      fetchInsuranceTypes();
-      fetchCurrencies();
-      fetchInsuranceCompanies();
-    }
-  }, [token, fetchInsuranceTypes, fetchCurrencies, fetchInsuranceCompanies]);
+  // React Query ile veri çekme otomatik olarak gerçekleştirildiği için
+  // manual fetch işlemlerine artık gerek yok - otomatik olarak yapılıyor
+  // useEffect bloğu kaldırıldı çünkü tüm veri çekme işlemleri React Query tarafından yönetiliyor
 
   useEffect(() => {
     if (vehicleId) fetchInsurances(vehicleId);
