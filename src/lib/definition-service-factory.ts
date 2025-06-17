@@ -102,7 +102,7 @@ export function createDefinitionService<T extends { id: number | string }>(
     
     return useQuery<T[], Error>({
       queryFn: () => auth.get(`api/${endpoint}`),
-      queryKey: [`${endpoint}-list`],
+      queryKey: [endpoint],
       enabled: !!token
     });
   };
@@ -123,8 +123,8 @@ export function createDefinitionService<T extends { id: number | string }>(
     const useCreate = () => {
       const { token } = useAuth();
       
-      return useMutation<T, Error, Omit<T, 'id' | 'created_at'>>({
-        mutationFn: (data: Omit<T, 'id' | 'created_at'>) => {
+      return useMutation<T, Error, Partial<Omit<T, 'id' | 'created_at'>>>({
+        mutationFn: (data: Partial<Omit<T, 'id' | 'created_at'>>) => {
           return apiRequest<T>(`api/${endpoint}`, {
             method: 'POST',
             body: JSON.stringify(data),

@@ -36,7 +36,7 @@ export interface FilterOption<T> {
   defaultValue?: any;
 }
 
-export function createDefinitionList<T extends { id: number; name: string }>(options: {
+export function createDefinitionList<T extends { id: number }>(options: {
   entityName: string;
   displayNameSingular: string;
   displayNamePlural: string;
@@ -51,7 +51,7 @@ export function createDefinitionList<T extends { id: number; name: string }>(opt
     displayNamePlural, 
     columns, 
     ActionsMenu,
-    searchFields = ['name'],
+    searchFields = [],
     filterOptions = []
   } = options;
   
@@ -86,7 +86,7 @@ export function createDefinitionList<T extends { id: number; name: string }>(opt
     // Arama ve filtreleme işlemi
     const filtered = items.filter(item => {
       // Arama filtresi
-      if (search.trim()) {
+      if (search.trim() && searchFields.length > 0) {
         const searchLower = search.toLowerCase();
         const matchesSearch = searchFields.some(field => {
           const value = item[field];
@@ -357,10 +357,11 @@ export function createDefinitionForm<T extends Record<string, any>>(options: {
  * @param options Dialog yapılandırma seçenekleri
  * @returns Onay dialog bileşeni
  */
-export function createDeleteConfirmDialog<T extends { id: number; name: string }>(options: {
+export function createDeleteConfirmDialog<T extends { id: number }>(options: {
   entityDisplayName: string;
+  getItemLabel?: (item: T | null) => string;
 }) {
-  const { entityDisplayName } = options;
+  const { entityDisplayName, getItemLabel } = options;
   
   return function DeleteConfirmDialog({
     open,
@@ -383,7 +384,7 @@ export function createDeleteConfirmDialog<T extends { id: number; name: string }
           <DialogHeader>
             <DialogTitle>{entityDisplayName} Silme Onayı</DialogTitle>
             <DialogDescription>
-              <span className="text-destructive font-semibold">{itemToDelete?.name}</span> {entityDisplayName.toLowerCase()}ini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+              <span className="text-destructive font-semibold">{getItemLabel ? getItemLabel(itemToDelete) : (itemToDelete ? (itemToDelete as any).hgs_tag_no ?? (itemToDelete as any).name ?? itemToDelete.id : '')}</span> {entityDisplayName.toLowerCase()}ini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex justify-end gap-3 pt-2">

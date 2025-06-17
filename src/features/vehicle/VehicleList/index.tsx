@@ -2,11 +2,12 @@
 
 import React from 'react';
 
-import { Input } from '@/components/ui/input';
 
 import { useVehicleTable } from '../hooks/useVehicleTable';
 import { useVehicles } from '../hooks/useVehicles';
 
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/ui/table/data-table';
 import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
 import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
@@ -14,7 +15,8 @@ import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
 
 const VehicleList: React.FC = () => {
   const { vehicles, loading, error } = useVehicles();
-  const { table, globalFilter, setGlobalFilter } = useVehicleTable(vehicles);
+  const { table } = useVehicleTable(vehicles);
+  const router = useRouter();
 
 
 
@@ -24,12 +26,9 @@ const VehicleList: React.FC = () => {
   return (
     <div className='flex h-full w-full flex-col p-8'>
       <DataTableToolbar table={table}>
-        <Input
-          placeholder='Plaka ara...' aria-label='Plaka ara'
-          value={globalFilter}
-          onChange={e => setGlobalFilter(e.target.value)}
-          className='h-8 w-48 lg:w-64'
-        />
+        <Button size="sm" onClick={() => router.push('/dashboard/vehicles/create')} className="mr-4">
+            Araç Ekle
+          </Button>
       </DataTableToolbar>
 
       <div className='flex-1 min-h-0 flex flex-col overflow-auto'>

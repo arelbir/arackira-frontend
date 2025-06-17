@@ -7,12 +7,12 @@ import CustomerList, {
 import CustomerForm from '@/features/customer/components/customer-form';
 import { CustomerFormValues } from '@/features/customer/utils/customer-schema';
 import { useCustomer } from '@/features/customer/hooks/useCustomer';
-import { ToastProvider, useToast } from '@/components/ToastContext';
+import { notifySuccess, notifyError } from '@/features/vehicle/create/create-tabs/sonner-util';
 
 import { useDebouncedCallback } from '@/hooks/use-debounced-callback';
 
 const CustomersPage = () => {
-  const { showToast } = useToast();
+
   const {
     customers,
     loading,
@@ -31,8 +31,8 @@ const CustomersPage = () => {
   );
 
   useEffect(() => {
-    fetchCustomers().catch((err) => showToast('Müşteriler alınamadı', 'error'));
-  }, [fetchCustomers, showToast]);
+    fetchCustomers().catch((err) => notifyError('Müşteriler alınamadı'));
+  }, [fetchCustomers]);
 
   // Müşterilerin aktiflik durumunu localde yönet
   useEffect(() => {
@@ -57,9 +57,9 @@ const CustomersPage = () => {
     if (window.confirm('Bu müşteriyi silmek istediğinize emin misiniz?')) {
       try {
         await removeCustomer(customer.id);
-        showToast('Müşteri silindi', 'success');
+        notifySuccess('Müşteri silindi');
       } catch (err: any) {
-        showToast(err.message || 'Müşteri silinemedi', 'error');
+        notifyError(err.message || 'Müşteri silinemedi');
       }
     }
   };
@@ -68,13 +68,14 @@ const CustomersPage = () => {
     try {
       if (editing) {
         await editCustomer(editing.id, data);
-        showToast('Müşteri güncellendi', 'success');
+        notifySuccess('Müşteri güncellendi');
       } else {
-        await addCustomer(data);
-        showToast('Müşteri eklendi', 'success');
+        // Eksik active alanı ekle
+        await addCustomer({ ...data, active: true });
+        notifySuccess('Müşteri eklendi');
       }
     } catch (err: any) {
-      showToast(err.message || 'İşlem sırasında hata oluştu', 'error');
+      notifyError(err.message || 'İşlem sırasında hata oluştu');
     } finally {
       setFormOpen(false);
     }
@@ -220,9 +221,9 @@ const CustomersPage = () => {
 };
 
 const CustomersPageWithToast = () => (
-  <ToastProvider>
+
     <CustomersPage />
-  </ToastProvider>
+
 );
 
 export default CustomersPageWithToast;
