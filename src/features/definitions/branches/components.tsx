@@ -4,18 +4,18 @@ import { createDefinitionActionsMenu, createDefinitionList, createDefinitionForm
 import type { Branch } from './branch-schema';
 import { branchSchema } from './branch-schema';
 
-// Şube için eylem menüsünü oluştur
+// Ruhsat Sahibi Firma için eylem menüsünü oluştur
 export const BranchActionsMenu = createDefinitionActionsMenu<Branch>({
-  displayNameSingular: 'Şube'
+  displayNameSingular: 'Ruhsat Sahibi Firma'
 });
 
-// Şube listesi bileşenini oluştur
+// Ruhsat Sahibi Firma listesi bileşenini oluştur
 export const BranchList = createDefinitionList<Branch>({
   entityName: 'branch',
-  displayNameSingular: 'Şube',
-  displayNamePlural: 'Şubeler',
+  displayNameSingular: 'Ruhsat Sahibi Firma',
+  displayNamePlural: 'Ruhsat Sahibi Firmaler',
   columns: [
-    { key: 'name', label: 'Şube Adı' },
+    { key: 'name', label: 'Ruhsat Sahibi Firma Adı' },
     { key: 'address', label: 'Adres' },
     { key: 'phone', label: 'Telefon' }
   ],
@@ -23,16 +23,16 @@ export const BranchList = createDefinitionList<Branch>({
   searchFields: ['name', 'address', 'phone']
 });
 
-// Şube form bileşenini oluştur
+// Ruhsat Sahibi Firma form bileşenini oluştur
 export const BranchForm = createDefinitionForm<{
   name: string;
   address?: string;
   phone?: string;
 }>({
-  displayName: 'Şube',
+  displayName: 'Ruhsat Sahibi Firma',
   schema: branchSchema,
   fields: [
-    { key: 'name', label: 'Şube Adı', required: true },
+    { key: 'name', label: 'Ruhsat Sahibi Firma Adı', required: true },
     { key: 'address', label: 'Adres', type: 'textarea' },
     { key: 'phone', label: 'Telefon' }
   ]
@@ -40,5 +40,5 @@ export const BranchForm = createDefinitionForm<{
 
 // Silme onayı için dialog bileşeni
 export const BranchDeleteConfirmDialog = createDeleteConfirmDialog<Branch>({
-  entityDisplayName: 'Şube'
+  entityDisplayName: 'Ruhsat Sahibi Firma'
 });

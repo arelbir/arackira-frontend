@@ -21,7 +21,7 @@ const VehicleOtherInfoTab: React.FC<VehicleOtherInfoTabProps> = ({ form }) => {
         <FormController
           form={form}
           name="next_maintenance_date"
-          label="Sonraki Bakım Tarihi"
+          label="Trafiğe Çıkış Tarihi"
           fieldType="date"
           placeholder="Bakım tarihi"
         />

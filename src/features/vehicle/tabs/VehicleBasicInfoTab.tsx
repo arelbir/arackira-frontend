@@ -38,9 +38,9 @@ const VehicleBasicInfoTab: React.FC<VehicleBasicInfoTabProps> = ({ form }) => {
         <FormController
           form={form}
           name="branch_id"
-          label="Şube"
+          label="Ruhsat Sahibi Firma"
           fieldType="select"
-          placeholder="Şube seçin"
+          placeholder="Ruhsat Sahibi Firma seçin"
           options={branchOptions}
           disabled={loadingBranches}
         />

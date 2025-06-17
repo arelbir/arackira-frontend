@@ -24,7 +24,7 @@ export function DatesTab() {
           <DatePicker
             date={field.value && !isNaN(new Date(field.value as string).getTime()) ? new Date(field.value as string) : undefined}
             onChange={d => field.onChange(d ? d.toISOString().split("T")[0] : undefined)}
-            placeholder="İlk Tescil Tarihi"
+            placeholder="Son Tescil Tarihi"
           />
         )}
       />
@@ -39,7 +39,7 @@ export function DatesTab() {
           <DatePicker
             date={field.value && !isNaN(new Date(field.value as string).getTime()) ? new Date(field.value as string) : undefined}
             onChange={d => field.onChange(d ? d.toISOString().split("T")[0] : undefined)}
-            placeholder="Sonraki Bakım Tarihi *"
+            placeholder="Trafiğe Çıkış Tarihi *"
           />
         )}
       />

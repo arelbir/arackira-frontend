@@ -216,12 +216,12 @@ export default function AppSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
-                tooltip='Şubeler'
+                tooltip='Ruhsat Sahibi Firmaler'
                 isActive={pathname === '/dashboard/definitions/branches'}
               >
                 <Link href='/dashboard/definitions/branches'>
                   <Icons.settings className='mr-2' />
-                  <span>Şubeler</span>
+                  <span>Ruhsat Sahibi Firmaler</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

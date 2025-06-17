@@ -123,7 +123,7 @@ Bu analiz temelinde, modülleri şu sırayla yeniden düzenlemeyi öneriyoruz:
 - `AgencyDeleteConfirmDialog` oluştur
 - Dialog entegrasyonu ekle
 
-#### 21. Şubeler (Branches)
+#### 21. Ruhsat Sahibi Firmaler (Branches)
 - `BranchDeleteConfirmDialog` oluştur
 - Silme onayını güncelleyerek test et
 

@@ -69,7 +69,7 @@ export const TabNavigator: React.FC<{
   // Dinamik tamamlanma oranı: sadece zorunlu alanlar
   const requiredFields: { name: string; label: string }[] = [
     { name: "plate_number", label: "Plaka" },
-    { name: "branch_id", label: "Şube" },
+    { name: "branch_id", label: "Ruhsat Sahibi Firma" },
     { name: "vehicle_type_id", label: "Araç Tipi" },
     { name: "brand_id", label: "Marka" },
     { name: "model_id", label: "Model" },

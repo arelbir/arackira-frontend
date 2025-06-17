@@ -6,14 +6,14 @@ import { z } from 'zod';
 
 export const VehicleSchema = z.object({
   id: z.number(),
-  plate_number: z.string(),
+  plate_number: z.string().nullable(),
   branch_id: z.number().nullable(),
   brand_id: z.number().nullable(),
   model_id: z.number().nullable(),
   vehicle_status_id: z.number().nullable(),
   model_year: z.number().nullable(),
   vehicle_km: z.number().nullable()
-});
+}).passthrough();
 
 export type Vehicle = z.infer<typeof VehicleSchema>;
 

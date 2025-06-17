@@ -268,11 +268,11 @@ function AracBilgileriFields({ control, errors }: any) {
         <FormSelectField
           control={control}
           name={FIELD.BRANCH}
-          label="Şube"
+          label="Ruhsat Sahibi Firma"
           options={(branches ?? []).map(b => ({ label: b.name, value: String(b.id) }))}
           loading={!Array.isArray(branches)}
           error={undefined}
-          placeholder="Şube seçiniz"
+          placeholder="Ruhsat Sahibi Firma seçiniz"
           disabled={!Array.isArray(branches)}
           helperText={!Array.isArray(branches) ? "Yükleniyor..." : undefined}
         />

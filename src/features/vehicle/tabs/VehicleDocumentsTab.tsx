@@ -21,9 +21,9 @@ const VehicleDocumentsTab: React.FC<VehicleDocumentsTabProps> = ({ form }) => {
         <FormController
           form={form}
           name="first_registration_date"
-          label="İlk Tescil Tarihi"
+          label="Son Tescil Tarihi"
           fieldType="date"
-          placeholder="İlk tescil tarihi seçin"
+          placeholder="Son Tescil Tarihi seçin"
         />
         
         <FormController
@@ -47,7 +47,7 @@ const VehicleDocumentsTab: React.FC<VehicleDocumentsTabProps> = ({ form }) => {
         <FormController
           form={form}
           name="next_maintenance_date"
-          label="Sonraki Bakım Tarihi"
+          label="Trafiğe Çıkış Tarihi"
           fieldType="date"
           placeholder="Bakım tarihi seçin"
         />

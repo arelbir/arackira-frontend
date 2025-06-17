@@ -103,7 +103,7 @@ const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({ vehicle, onClos
         
         <DetailSection title="Temel Bilgiler">
           <DetailItem label="Plaka" value={vehicle.license_plate} />
-          <DetailItem label="Şube" value={vehicle.branch_id} />
+          <DetailItem label="Ruhsat Sahibi Firma" value={vehicle.branch_id} />
           <DetailItem label="Şasi No" value={vehicle.chassis_number} />
           <DetailItem label="Araç Durumu" value={vehicle.vehicle_status_id} />
           <DetailItem label="TSB Kodu" value={vehicle.tsb_code} />
@@ -131,7 +131,7 @@ const VehicleDetailModal: React.FC<VehicleDetailModalProps> = ({ vehicle, onClos
         </DetailSection>
         
         <DetailSection title="Belge Bilgileri">
-          <DetailItem label="İlk Tescil Tarihi" value={formatDate(vehicle.first_registration_date)} />
+          <DetailItem label="Son Tescil Tarihi" value={formatDate(vehicle.first_registration_date)} />
           <DetailItem label="Ruhsat Tarihi" value={formatDate(vehicle.registration_date)} />
           <DetailItem label="Muayene Bitiş" value={formatDate(vehicle.inspection_expiry_date)} />
           <DetailItem label="Sonraki Bakım" value={formatDate(vehicle.next_maintenance_date)} />

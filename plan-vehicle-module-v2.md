@@ -19,7 +19,7 @@ Backend ile tam uyumlu, sürdürülebilir, modüler ve detaylı veri girişine u
 /features/vehicle/
   form/
     VehicleForm.tsx              # Formun ana çatı componenti
-    GeneralInfoSection.tsx       # Genel bilgiler (plaka, marka, model, yıl, renk, şube, tip, vites, yakıt...)
+    GeneralInfoSection.tsx       # Genel bilgiler (plaka, marka, model, yıl, renk, Ruhsat Sahibi Firma, tip, vites, yakıt...)
     OfficialInfoSection.tsx      # Resmi bilgiler (şasi no, motor no, ruhsat, tescil tarihi, belge no...)
     OwnershipInfoSection.tsx     # Haklama/sorumluluk (sorumlu, müşteri, km, bakım, sigorta, muayene...)
     FormSelectField.tsx          # Ortak selectbox alanı
@@ -46,13 +46,13 @@ Backend ile tam uyumlu, sürdürülebilir, modüler ve detaylı veri girişine u
 ## 3. Form Alan Grupları ve İçerikleri
 
 ### Genel Bilgiler
-- Plaka, Şube, Cins, Marka, Model, Versiyon, Paket, Grup, Kasa Tipi, Yakıt, Vites, Model Yılı, Renk, Motor Gücü (hp), Motor Hacmi (cc)
+- Plaka, Ruhsat Sahibi Firma, Cins, Marka, Model, Versiyon, Paket, Grup, Kasa Tipi, Yakıt, Vites, Model Yılı, Renk, Motor Gücü (hp), Motor Hacmi (cc)
 
 ### Resmi Bilgiler
-- Şasi No, Motor No, İlk Tescil Tarihi, Ruhsat Belge No, Satın Alma Tarihi, Satın Alma Maliyeti
+- Şasi No, Motor No, Son Tescil Tarihi, Ruhsat Belge No, Satın Alma Tarihi, Satın Alma Maliyeti
 
 ### Haklama ve Bakım Bilgileri
-- Araç Sorumlusu, Müşteri, KM, Sonraki Bakım Tarihi, Muayene Bitiş, Sigorta Bitiş, Kasko Bitiş, Egzoz Pulu Bitiş
+- Araç Sorumlusu, Müşteri, KM, Trafiğe Çıkış Tarihi, Muayene Bitiş, Sigorta Bitiş, Kasko Bitiş, Egzoz Pulu Bitiş
 
 ### Diğer Bilgiler
 - Notlar, Durum, Ek alanlar (gerekirse)

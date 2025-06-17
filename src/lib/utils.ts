@@ -5,6 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function formatDateTR(date: string | Date | null | undefined): string {
+  if (!date) return '-';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (!(d instanceof Date) || isNaN(d.getTime())) return '-';
+  return d.toLocaleDateString('tr-TR');
+}
+
+export function safeAccess<T = any, D = string>(obj: T, path: (string | number)[], fallback: D): D | any {
+  return path.reduce<any>((acc, key) => (acc && acc[key] !== undefined && acc[key] !== null ? acc[key] : undefined), obj) ?? fallback;
+}
+
 export function formatBytes(
   bytes: number,
   opts: {

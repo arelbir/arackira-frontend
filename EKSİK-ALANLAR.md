@@ -95,7 +95,7 @@ Aşağıdaki alanlar, backend'in zorunlu olarak beklediği ancak mevcut formda e
 ## Eksik/Zorunlu Alanlar
 
 - plate_number (Plaka Numarası)
-- branch_id (Şube ID)
+- branch_id (Ruhsat Sahibi Firma ID)
 - version (Versiyon)
 - package (Paket)
 - vehicle_group_id (Araç Grup ID)
@@ -108,11 +108,11 @@ Aşağıdaki alanlar, backend'in zorunlu olarak beklediği ancak mevcut formda e
 - engine_volume_cc (Motor Hacmi CC)
 - chassis_number (Şasi Numarası)
 - engine_number (Motor Numarası)
-- first_registration_date (İlk Tescil Tarihi)
+- first_registration_date (Son Tescil Tarihi)
 - registration_document_number (Ruhsat Belge Numarası)
 - vehicle_responsible_id (Araç Sorumlusu ID)
 - vehicle_km (Araç KM)
-- next_maintenance_date (Sonraki Bakım Tarihi)
+- next_maintenance_date (Trafiğe Çıkış Tarihi)
 - inspection_expiry_date (Muayene Bitiş Tarihi)
 - insurance_expiry_date (Trafik Sigorta Bitiş Tarihi)
 - casco_expiry_date (Kasko Bitiş Tarihi)
@@ -127,7 +127,7 @@ Aşağıdaki alanlar, backend'in zorunlu olarak beklediği ancak mevcut formda e
 
 Tamamlanan Alanlar (Formda Var)
 plate_number (Plaka Numarası)
-branch_id (Şube ID)
+branch_id (Ruhsat Sahibi Firma ID)
 version (Versiyon)
 package (Paket) → package_id olarak var
 vehicle_group_id (Araç Grup ID)
@@ -143,13 +143,13 @@ engine_number (Motor Numarası)
 
 
 Eksik Alanlar (Formda YOK)
-first_registration_date (İlk Tescil Tarihi)
+first_registration_date (Son Tescil Tarihi)
 
 registration_document_number (Ruhsat Belge Numarası)
 vehicle_responsible_id (Araç Sorumlusu ID)
 vehicle_km (Araç KM)
 
-next_maintenance_date (Sonraki Bakım Tarihi)
+next_maintenance_date (Trafiğe Çıkış Tarihi)
 inspection_expiry_date (Muayene Bitiş Tarihi)
 insurance_expiry_date (Trafik Sigorta Bitiş Tarihi)
 casco_expiry_date (Kasko Bitiş Tarihi)

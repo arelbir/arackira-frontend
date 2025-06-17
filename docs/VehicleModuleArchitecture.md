@@ -181,7 +181,7 @@ Mevcut durumda şu iyileştirmeler yapılmalıdır:
 
 | Tab ID | Bileşen Adı | Sorumluluk |
 |--------|-------------|------------|
-| temel-kayit | VehicleBasicInfoTab | Araç temel kayıt bilgileri (şube, şasi no, durum vb.) |
+| temel-kayit | VehicleBasicInfoTab | Araç temel kayıt bilgileri (Ruhsat Sahibi Firma, şasi no, durum vb.) |
 | arac-detaylari | VehicleDetailsTab | Araç teknik özellikleri, marka/model bilgileri |
 | belge-bilgileri | VehicleDocumentsTab | Araç belge bilgileri |
 | sigorta-kasko | VehicleInsuranceTab | Sigorta ve kasko bilgileri |

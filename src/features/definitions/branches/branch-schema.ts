@@ -13,7 +13,7 @@ export const BranchSchema = z.object({
 
 // Form değerleri için şema
 export const branchSchema = z.object({
-  name: z.string().min(2, 'Şube adı zorunlu ve en az 2 karakter olmalı'),
+  name: z.string().min(2, 'Ruhsat Sahibi Firma adı zorunlu ve en az 2 karakter olmalı'),
   address: z.string().optional(),
   phone: z.string().optional()
 });

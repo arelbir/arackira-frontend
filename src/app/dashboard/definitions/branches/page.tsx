@@ -1,4 +1,4 @@
-// Şube tanımları sayfası - Yeni hook tabanlı mimari ile güncellendi
+// Ruhsat Sahibi Firma tanımları sayfası - Yeni hook tabanlı mimari ile güncellendi
 'use client';
 import React, { useState } from 'react';
 import { useAllBranches } from '@/features/definitions/branches/use-branches';
@@ -46,7 +46,7 @@ export default function BranchesDefinitionsPage() {
       setModalOpen(false);
       setEditingBranch(null);
     } catch (err) {
-      console.error('Şube kaydedilirken hata oluştu:', err);
+      console.error('Ruhsat Sahibi Firma kaydedilirken hata oluştu:', err);
     }
   };
 
@@ -83,7 +83,7 @@ export default function BranchesDefinitionsPage() {
       <Sheet open={modalOpen} onOpenChange={setModalOpen}>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle>{editingBranch ? 'Şube Düzenle' : 'Yeni Şube'}</SheetTitle>
+            <SheetTitle>{editingBranch ? 'Ruhsat Sahibi Firma Düzenle' : 'Yeni Ruhsat Sahibi Firma'}</SheetTitle>
           </SheetHeader>
           <BranchForm
             open={modalOpen}

@@ -11,7 +11,7 @@ import { Branch } from './branch-schema';
 import { toast } from 'sonner';
 import { useEffect } from 'react';
 
-// Tüm şubeleri getiren hook
+// Tüm Ruhsat Sahibi Firmaleri getiren hook
 export function useAllBranches() {
   // Hook örneği oluşturalım
   const branchesHook = useGetAllBranches();
@@ -20,16 +20,16 @@ export function useAllBranches() {
   useEffect(() => {
     if (branchesHook.error) {
       toast.error("Hata", {
-        description: "Tüm şubeler yüklenirken bir hata oluştu",
+        description: "Tüm Ruhsat Sahibi Firmaler yüklenirken bir hata oluştu",
       });
-      console.error('Tüm şubeler yükleme hatası:', branchesHook.error);
+      console.error('Tüm Ruhsat Sahibi Firmaler yükleme hatası:', branchesHook.error);
     }
   }, [branchesHook.error]);
 
   return branchesHook;
 }
 
-// Şube verilerini eklemek, güncellemek ve silmek için mutation hook'ları
+// Ruhsat Sahibi Firma verilerini eklemek, güncellemek ve silmek için mutation hook'ları
 export function useBranchMutations() {
   const queryClient = useQueryClient();
   
@@ -38,63 +38,63 @@ export function useBranchMutations() {
   const updateBranchHook = useUpdateBranch();
   const deleteBranchHook = useDeleteBranch();
 
-  // Şube ekleme
+  // Ruhsat Sahibi Firma ekleme
   const addMutation = useMutation({
     mutationFn: (data: Omit<Branch, 'id' | 'created_at'>) => {
       return createBranchHook.mutateAsync(data);
     },
     onSuccess: () => {
-      // Tüm şube ile ilgili sorguları geçersiz kılarak UI güncellemelerini sağla
+      // Tüm Ruhsat Sahibi Firma ile ilgili sorguları geçersiz kılarak UI güncellemelerini sağla
       queryClient.invalidateQueries({ queryKey: ['branches-list'] });
       toast.success("Başarılı", {
-        description: "Şube başarıyla eklendi",
+        description: "Ruhsat Sahibi Firma başarıyla eklendi",
       });
     },
     onError: (error) => {
       toast.error("Hata", {
-        description: "Şube eklenirken bir hata oluştu",
+        description: "Ruhsat Sahibi Firma eklenirken bir hata oluştu",
       });
-      console.error('Şube ekleme hatası:', error);
+      console.error('Ruhsat Sahibi Firma ekleme hatası:', error);
     }
   });
 
-  // Şube güncelleme
+  // Ruhsat Sahibi Firma güncelleme
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number, data: Partial<Omit<Branch, 'id' | 'created_at'>> }) => {
       return updateBranchHook.mutateAsync({ id, data });
     },
     onSuccess: () => {
-      // Tüm şube ile ilgili sorguları geçersiz kılarak UI güncellemelerini sağla
+      // Tüm Ruhsat Sahibi Firma ile ilgili sorguları geçersiz kılarak UI güncellemelerini sağla
       queryClient.invalidateQueries({ queryKey: ['branches-list'] });
       toast.success("Başarılı", {
-        description: "Şube başarıyla güncellendi",
+        description: "Ruhsat Sahibi Firma başarıyla güncellendi",
       });
     },
     onError: (error) => {
       toast.error("Hata", {
-        description: "Şube güncellenirken bir hata oluştu",
+        description: "Ruhsat Sahibi Firma güncellenirken bir hata oluştu",
       });
-      console.error('Şube güncelleme hatası:', error);
+      console.error('Ruhsat Sahibi Firma güncelleme hatası:', error);
     }
   });
 
-  // Şube silme
+  // Ruhsat Sahibi Firma silme
   const deleteMutation = useMutation({
     mutationFn: (id: number) => {
       return deleteBranchHook.mutateAsync(id);
     },
     onSuccess: () => {
-      // Tüm şube ile ilgili sorguları geçersiz kılarak UI güncellemelerini sağla
+      // Tüm Ruhsat Sahibi Firma ile ilgili sorguları geçersiz kılarak UI güncellemelerini sağla
       queryClient.invalidateQueries({ queryKey: ['branches-list'] });
       toast.success("Başarılı", {
-        description: "Şube başarıyla silindi",
+        description: "Ruhsat Sahibi Firma başarıyla silindi",
       });
     },
     onError: (error) => {
       toast.error("Hata", {
-        description: "Şube silinirken bir hata oluştu",
+        description: "Ruhsat Sahibi Firma silinirken bir hata oluştu",
       });
-      console.error('Şube silme hatası:', error);
+      console.error('Ruhsat Sahibi Firma silme hatası:', error);
     }
   });
 
