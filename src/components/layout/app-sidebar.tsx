@@ -153,6 +153,18 @@ export default function AppSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
+                tooltip='Müşteriler (Yeni)'
+                isActive={pathname === '/dashboard/clients'}
+              >
+                <Link href='/dashboard/clients'>
+                  <Icons.user className='mr-2' />
+                  <span>Müşteriler</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
                 tooltip='Müşteriler'
                 isActive={pathname === '/dashboard/customers'}
               >
