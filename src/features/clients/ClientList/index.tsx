@@ -1,11 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useClients } from "../hooks/useClients";
 import { useClientTable } from "../hooks/useClientTable";
+import { useBulkActions } from "@/hooks/useBulkActions";
 import { DataTable } from "@/components/ui/table/data-table";
 import { DataTableToolbar } from "@/components/ui/table/data-table-toolbar";
+import { DataTableBulkActionsSlideIn } from "@/components/ui/table/data-table-bulk-actions-slide-in";
 import { DataTableSkeleton } from "@/components/ui/table/data-table-skeleton";
+import { DataTablePagination } from "@/components/ui/table/data-table-pagination";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
@@ -14,6 +17,23 @@ const ClientList: React.FC = () => {
   const { clients, isLoading, isError, mutate } = useClients();
   const { table, selectedRows } = useClientTable(clients, mutate);
   const router = useRouter();
+  
+  // Bu useEffect, bileşen mount edildikten sonra TanStack Table'ın
+  // pagination state'ini initialize etmesini sağlar, render sırasında değil
+  useEffect(() => {
+    // Boş useEffect, bileşen mount edildikten sonra çalışacak
+    // ve dolayısıyla TanStack Table'ın initial state işlemleri güvenli bir şekilde yapılabilecek
+  }, []);
+  
+  // Toplu işlemler için useBulkActions hook'unu kullan
+  const { 
+    isProcessing, 
+    handleBulkDelete,
+    handleBulkRestore 
+  } = useBulkActions({
+    resourceUrl: '/api/clients',
+    onAction: () => mutate()
+  });
 
   if (isError)
     return (
@@ -25,11 +45,11 @@ const ClientList: React.FC = () => {
       <DataTableToolbar 
         table={table} 
         className="mb-3"
+        resourceUrl="/api/clients"
+        onAction={() => mutate()}
+        editBasePath="/dashboard/clients"
       >
-        {/* Sol taraf: Arama, filtre ve toplu içe/dışa aktarma için alanlar */}
         <div className="flex flex-1 items-center space-x-2">
-          {/* Buraya filtreleme komponentleri eklenebilir */}
-          
           {/* Yeni Müşteri Butonu */}
           <Button
             size="sm"
@@ -38,9 +58,6 @@ const ClientList: React.FC = () => {
             Müşteri Ekle
           </Button>
         </div>
-
-        {/* Sağ taraf: Toplu işlemler çubuğu */}
-
       </DataTableToolbar>
 
       <div className="flex-1 min-h-0 flex flex-col overflow-auto mb-4">
@@ -53,6 +70,8 @@ const ClientList: React.FC = () => {
           <DataTable table={table} />
         )}
       </div>
+      
+
     </div>
   );
 };

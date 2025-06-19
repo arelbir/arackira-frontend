@@ -128,12 +128,12 @@ export function ClientForm({ initial, onSubmit, disabled }: ClientFormProps) {
         </div>
         {fields.map((field, idx) => (
           <div key={field.id} className="flex gap-2 mb-2">
-            <Input placeholder="Tip" {...form.register(`addresses.${idx}.type`)} className="w-28" disabled={disabled} value={form.getValues(`addresses.${idx}.type`) ?? ''} />
-            <Input placeholder="Adres" {...form.register(`addresses.${idx}.address`)} className="flex-1" disabled={disabled} value={form.getValues(`addresses.${idx}.address`) ?? ''} />
-            <Input placeholder="Şehir" {...form.register(`addresses.${idx}.city`)} className="w-32" disabled={disabled} value={form.getValues(`addresses.${idx}.city`) ?? ''} />
-            <Input placeholder="Ülke" {...form.register(`addresses.${idx}.country`)} className="w-32" disabled={disabled} value={form.getValues(`addresses.${idx}.country`) ?? ''} />
-            <Input placeholder="Posta Kodu" {...form.register(`addresses.${idx}.postal_code`)} className="w-24" disabled={disabled} value={form.getValues(`addresses.${idx}.postal_code`) ?? ''} />
-            <Input placeholder="Vergi No" {...form.register(`addresses.${idx}.tax_number`)} className="w-32" disabled={disabled} value={form.getValues(`addresses.${idx}.tax_number`) ?? ''} />
+            <Input placeholder="Tip" {...form.register(`addresses.${idx}.type`)} className="w-28" disabled={disabled} />
+            <Input placeholder="Adres" {...form.register(`addresses.${idx}.address`)} className="flex-1" disabled={disabled} />
+            <Input placeholder="Şehir" {...form.register(`addresses.${idx}.city`)} className="w-32" disabled={disabled} />
+            <Input placeholder="Ülke" {...form.register(`addresses.${idx}.country`)} className="w-32" disabled={disabled} />
+            <Input placeholder="Posta Kodu" {...form.register(`addresses.${idx}.postal_code`)} className="w-24" disabled={disabled} />
+            <Input placeholder="Vergi No" {...form.register(`addresses.${idx}.tax_number`)} className="w-32" disabled={disabled} />
             <Button type="button" onClick={() => remove(idx)} size="icon" variant="ghost" disabled={disabled}>Sil</Button>
           </div>
         ))}
