@@ -7,6 +7,7 @@ export async function apiFetcher(path: string, init?: RequestInit) {
   // Varsayılan header'lar
   const defaultHeaders: HeadersInit = {
     Accept: "application/json",
+    "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {})
   };
   // Kullanıcıdan gelen header varsa birleştir

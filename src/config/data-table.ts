@@ -60,7 +60,9 @@ export const dataTableConfig = {
     'dateRange',
     'boolean',
     'select',
-    'multiSelect'
+    'multiSelect',
+    'faceted',
+    'slider'
   ] as const,
   operators: [
     'iLike',

@@ -45,7 +45,7 @@ export function ClientForm({ initial, onSubmit, disabled }: ClientFormProps) {
           <FormItem>
             <FormLabel>Şirket Adı</FormLabel>
             <FormControl>
-              <Input {...field} disabled={disabled} />
+              <Input {...field} value={field.value ?? ''} disabled={disabled} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -58,7 +58,7 @@ export function ClientForm({ initial, onSubmit, disabled }: ClientFormProps) {
           <FormItem>
             <FormLabel>Yetkili</FormLabel>
             <FormControl>
-              <Input {...field} disabled={disabled} />
+              <Input {...field} value={field.value ?? ''} disabled={disabled} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -71,7 +71,7 @@ export function ClientForm({ initial, onSubmit, disabled }: ClientFormProps) {
           <FormItem>
             <FormLabel>E-posta</FormLabel>
             <FormControl>
-              <Input {...field} disabled={disabled} />
+              <Input {...field} value={field.value ?? ''} disabled={disabled} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -84,7 +84,7 @@ export function ClientForm({ initial, onSubmit, disabled }: ClientFormProps) {
           <FormItem>
             <FormLabel>Telefon</FormLabel>
             <FormControl>
-              <Input {...field} disabled={disabled} />
+              <Input {...field} value={field.value ?? ''} disabled={disabled} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -103,6 +103,8 @@ export function ClientForm({ initial, onSubmit, disabled }: ClientFormProps) {
         error={form.formState.errors.client_type_id?.message}
         placeholder="Müşteri tipi seçin"
         disabled={disabled || clientTypesLoading}
+        onChange={(val: string) => form.setValue('client_type_id', val === '' ? null : Number(val))}
+        value={form.watch('client_type_id') === null || form.watch('client_type_id') === undefined ? '' : String(form.watch('client_type_id'))}
       />
       <FormSelectField
         control={form.control}
@@ -116,6 +118,8 @@ export function ClientForm({ initial, onSubmit, disabled }: ClientFormProps) {
         error={form.formState.errors.parent_company_id?.message}
         placeholder="Ana şirket seçin (opsiyonel)"
         disabled={disabled || parentCompaniesLoading}
+        onChange={(val: string) => form.setValue('parent_company_id', val === '' ? null : Number(val))}
+        value={form.watch('parent_company_id') === null || form.watch('parent_company_id') === undefined ? '' : String(form.watch('parent_company_id'))}
       />
       <div>
         <div className="flex items-center justify-between mb-2">
@@ -124,12 +128,12 @@ export function ClientForm({ initial, onSubmit, disabled }: ClientFormProps) {
         </div>
         {fields.map((field, idx) => (
           <div key={field.id} className="flex gap-2 mb-2">
-            <Input placeholder="Tip" {...form.register(`addresses.${idx}.type`)} className="w-28" disabled={disabled} />
-            <Input placeholder="Adres" {...form.register(`addresses.${idx}.address`)} className="flex-1" disabled={disabled} />
-            <Input placeholder="Şehir" {...form.register(`addresses.${idx}.city`)} className="w-32" disabled={disabled} />
-            <Input placeholder="Ülke" {...form.register(`addresses.${idx}.country`)} className="w-32" disabled={disabled} />
-            <Input placeholder="Posta Kodu" {...form.register(`addresses.${idx}.postal_code`)} className="w-24" disabled={disabled} />
-            <Input placeholder="Vergi No" {...form.register(`addresses.${idx}.tax_number`)} className="w-32" disabled={disabled} />
+            <Input placeholder="Tip" {...form.register(`addresses.${idx}.type`)} className="w-28" disabled={disabled} value={form.getValues(`addresses.${idx}.type`) ?? ''} />
+            <Input placeholder="Adres" {...form.register(`addresses.${idx}.address`)} className="flex-1" disabled={disabled} value={form.getValues(`addresses.${idx}.address`) ?? ''} />
+            <Input placeholder="Şehir" {...form.register(`addresses.${idx}.city`)} className="w-32" disabled={disabled} value={form.getValues(`addresses.${idx}.city`) ?? ''} />
+            <Input placeholder="Ülke" {...form.register(`addresses.${idx}.country`)} className="w-32" disabled={disabled} value={form.getValues(`addresses.${idx}.country`) ?? ''} />
+            <Input placeholder="Posta Kodu" {...form.register(`addresses.${idx}.postal_code`)} className="w-24" disabled={disabled} value={form.getValues(`addresses.${idx}.postal_code`) ?? ''} />
+            <Input placeholder="Vergi No" {...form.register(`addresses.${idx}.tax_number`)} className="w-32" disabled={disabled} value={form.getValues(`addresses.${idx}.tax_number`) ?? ''} />
             <Button type="button" onClick={() => remove(idx)} size="icon" variant="ghost" disabled={disabled}>Sil</Button>
           </div>
         ))}
