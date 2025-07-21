@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { apiFetcher } from '@/lib/api';
+import { apiRequest } from '@/lib/api-client';
 
 // Müşteri veri tipi tanımı
 export interface ClientCompany {
@@ -31,9 +31,14 @@ interface UseClientByIdResult {
  * @returns Müşteri verisi, yükleme durumu ve hata durumu
  */
 export function useClientById(id: string): UseClientByIdResult {
-  const { data, error, isLoading, mutate } = useSWR<ClientCompany>(
+  const fetcher = async (url: string): Promise<ClientCompany> => {
+    const response = await apiRequest({ url });
+    return response as ClientCompany;
+  };
+
+  const { data, error, isLoading, mutate } = useSWR(
     id ? `/api/clients/${id}` : null,
-    apiFetcher
+    fetcher
   );
 
   return {

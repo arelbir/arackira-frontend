@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useVehicleForm } from "../context/VehicleCreateProvider";
 import { CreateTabContent } from "../TabNavigator";
 import useSWR from "swr";
-import { apiFetcher } from "@/lib/api";
+import { apiRequest } from "@/lib/api-client";
 import { FormSelect } from "@/components/ui/form-select";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -35,8 +35,12 @@ const FIELD = {
 
 // useLookup: cache key ile tekil fetch, SWR cache paylaşımı
 function useLookup<T = { id: number; name: string }>(key: string | null) {
-  const { data, error, isLoading } = useSWR<T[]>(key, key ? apiFetcher : null, { revalidateOnFocus: false });
-  return { data, error, isLoading };
+  const { data, error, isLoading } = useSWR<any>(key, key ? (url: string) => apiRequest({ url }) : null, { revalidateOnFocus: false });
+
+  // API'den dönen veri bir nesne ise `data` alanını, değilse doğrudan veriyi kullan
+  const responseData = data?.data ? data.data : data;
+
+  return { data: responseData as T[] | undefined, error, isLoading };
 }
 
 // Custom hook: Brand değişince model_id sıfırlama ve edge-case logic
@@ -169,7 +173,7 @@ function SatinalmaBilgileriFields({ control, errors }: any) {
             validate: async (val) => {
               if (!val) return "Gerekli";
               try {
-                const res: { exists: boolean } = await apiFetcher(`/api/vehicles/check-plate?plate=${encodeURIComponent(val)}`);
+                                const res = await apiRequest({ url: `/api/vehicles/check-plate?plate=${encodeURIComponent(val)}`}) as { exists: boolean };
                 return res.exists ? "Plaka zaten kayıtlı" : true;
               } catch (e) {
                 return true;

@@ -6,10 +6,11 @@ import { TabNavigator, CreateTabContent } from '@/features/vehicle/create/create
 import { BasicTab } from '@/features/vehicle/create/create-tabs/tabs/BasicTab';
 //import { DetailsTab } from '@/features/vehicle/create/create-tabs/tabs/DetailsTab';
 import { ReviewTab } from '@/features/vehicle/create/create-tabs/tabs/ReviewTab';
-import { DatesTab } from '@/features/vehicle/create/create-tabs/tabs/DatesTab';
-import { InsuranceTab } from '@/features/vehicle/create/create-tabs/tabs/InsuranceTab';
+
+import { InsuranceTab } from '@/features/vehicle/create/create-tabs/tabs/insurance/InsuranceTab';
+import { InspectionTab } from '@/features/vehicle/create/create-tabs/tabs/inspection/InspectionTab';
 import { PurchaseTab } from '@/features/vehicle/create/create-tabs/tabs/PurchaseTab';
-import { GPSTab } from '@/features/vehicle/create/create-tabs/tabs/GPSTab';
+import { GPSTab } from '@/features/vehicle/create/create-tabs/tabs/gps/GPSTab';
 import { UttsTab } from '@/features/vehicle/create/create-tabs/tabs/UTTSTab';
 
 export default function VehicleCreatePage() {
@@ -30,7 +31,8 @@ export default function VehicleCreatePage() {
           <BasicTab />
           <GPSTab />
           <PurchaseTab />
-          <DatesTab />
+
+          <InspectionTab />
           <InsuranceTab />
           <UttsTab />
           <ReviewTab />

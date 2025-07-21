@@ -46,7 +46,7 @@ export function FormSelect({
   );
 }
 
-export function FormSelectField({ control, name, label, options, loading, error, placeholder, disabled, helperText, value, onChange }: any) {
+export function FormSelectField({ control, name, label, options, loading, error, placeholder, disabled, helperText, value, onChange, isIdField = false }: any) {
   return (
     <FormField
       control={control}
@@ -59,7 +59,13 @@ export function FormSelectField({ control, name, label, options, loading, error,
               {...field}
               id={field.id}
               value={typeof value !== 'undefined' ? value : (field.value !== undefined && field.value !== null ? String(field.value) : '')}
-              onChange={typeof onChange === 'function' ? onChange : field.onChange}
+              onChange={(val) => {
+                if (typeof onChange === 'function') {
+                  onChange(val);
+                } else {
+                  field.onChange(val);
+                }
+              }}
               options={options}
               loading={loading}
               disabled={disabled}

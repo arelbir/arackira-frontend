@@ -1,39 +1,48 @@
 import useSWR from 'swr';
-import { apiFetcher } from '@/lib/api';
+import { apiRequest } from '@/lib/api-client';
 
-// Seçenek tipini tanımlama
+// Seçenek tipini tanımlama (eğer kullanılmıyorsa kaldırılabilir)
 interface Option {
   value: string;
   label: string;
 }
 
-// Tüm lookup verilerini tek bir hook içinde toplar
+/**
+ * Tüm lookup verilerini (sigorta tipleri, şirketler, para birimleri vb.) tek bir hook içinde toplar.
+ * useSWR kütüphanesini kullanarak veri çekme, önbellekleme ve yeniden doğrulama sağlar.
+ * @returns Çeşitli lookup veri listeleri ve yükleme durumu
+ */
 export function useLookupData() {
-  // API çağrıları
-  const { data: insuranceTypes } = useSWR("/api/insurance-types", apiFetcher);
-  const { data: insuranceCompanies } = useSWR("/api/insurance-companies", apiFetcher);
-  const { data: agencies } = useSWR("/api/agencies", apiFetcher);
-  const { data: currencies } = useSWR("/api/currencies", apiFetcher);
-  const { data: paymentTypes } = useSWR("/api/payment-types", apiFetcher);
-  const { data: paymentAccounts } = useSWR("/api/payment-accounts", apiFetcher);
-
-  // Verileri seçenek formatına dönüştüren yardımcı fonksiyon
-  const formatOptions = (data: any[] = [], labelKey = 'name', valueKey = 'id'): Option[] => {
-    return data.map((x: any) => ({
-      value: String(x[valueKey]),
-      label: x[labelKey] || x.code || x.title || String(x[valueKey])
-    }));
+  /**
+   * SWR için veri çekme fonksiyonu.
+   * @param url - API endpoint URL'si
+   * @returns API'den dönen herhangi bir dizi
+   */
+  const fetcher = async (url: string): Promise<any[]> => {
+    return await apiRequest({ url }) as any[];
   };
 
-  // Tüm lookup verilerini formatlanmış olarak döndür
+  // API çağrıları
+  const { data: insuranceTypes, isLoading: isLoadingInsuranceTypes } = useSWR("/api/insurance-types", fetcher);
+  const { data: insuranceCompanies, isLoading: isLoadingInsuranceCompanies } = useSWR("/api/insurance-companies", fetcher);
+  const { data: agencies, isLoading: isLoadingAgencies } = useSWR("/api/agencies", fetcher);
+  const { data: currencies, isLoading: isLoadingCurrencies } = useSWR("/api/currencies", fetcher);
+  const { data: paymentTypes, isLoading: isLoadingPaymentTypes } = useSWR("/api/payment-types", fetcher);
+  const { data: paymentAccounts, isLoading: isLoadingPaymentAccounts } = useSWR("/api/payment-accounts", fetcher);
+
+  // Tüm lookup verilerinin yüklenip yüklenmediğini kontrol eden genel bir yükleme durumu
+  const isLoading = isLoadingInsuranceTypes || isLoadingInsuranceCompanies || isLoadingAgencies || 
+                     isLoadingCurrencies || isLoadingPaymentTypes || isLoadingPaymentAccounts;
+
+  // Tüm lookup verilerini orijinal formatında ve undefined yerine boş dizi ile döndür
   return {
-    insuranceTypes: formatOptions(insuranceTypes || []),
-    insuranceCompanies: formatOptions(insuranceCompanies || []),
-    agencies: formatOptions(agencies || []),
-    currencies: formatOptions(currencies || [], 'code'),
-    paymentTypes: formatOptions(paymentTypes || []),
-    paymentAccounts: formatOptions(paymentAccounts || []),
-    // API'den dönen veriler hazır olduğunda
-    isLoading: !insuranceTypes || !insuranceCompanies || !agencies || !currencies || !paymentTypes || !paymentAccounts
+    insuranceTypes: (insuranceTypes ?? []) as { id: string; name: string; }[],
+    insuranceCompanies: (insuranceCompanies ?? []) as { id: string; name: string; }[],
+    agencies: (agencies ?? []) as { id: string; name: string; }[],
+    // Para birimlerini { id, code } yerine { id, name: code } formatına dönüştür
+    currencies: (currencies ?? []).map((c: { id: string; code: string }) => ({ ...c, name: c.code })) as { id: string; name: string; }[],
+    paymentTypes: (paymentTypes ?? []) as { id: string; name: string; }[],
+    paymentAccounts: (paymentAccounts ?? []) as { id: string; name: string; }[],
+    isLoading // Tüm verilerin yüklenip yüklenmediğini gösteren tek bir bayrak
   };
 }

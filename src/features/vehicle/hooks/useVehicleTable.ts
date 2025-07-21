@@ -21,20 +21,27 @@ export type StrictVehicle = Vehicle & {
 };
 
 interface UseVehicleTableResult {
-  table: ReturnType<typeof useReactTable<Vehicle>>;
+  table: ReturnType<typeof useReactTable<StrictVehicle>>; // Tipi StrictVehicle olarak güncellendi
   globalFilter: string;
   setGlobalFilter: (v: string) => void;
   columnFilters: ColumnFiltersState;
   setColumnFilters: (v: ColumnFiltersState) => void;
 }
 
+/**
+ * Araç listesi için React Table hook'u.
+ * Filtreleme, sıralama ve sayfalama gibi tablo özelliklerini yönetir.
+ * @param vehicles - Tabloda gösterilecek araç verileri
+ * @returns table: React Table instance, globalFilter, setGlobalFilter, columnFilters, setColumnFilters
+ */
 export const useVehicleTable = (vehicles: StrictVehicle[]): UseVehicleTableResult => {
   const [globalFilter, setGlobalFilter] = useState('');
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
+  // Sütun tanımlamaları useMemo ile optimize edildi
   const columns = useMemo<ColumnDef<StrictVehicle, any>[]>(
     () => [
-      // Actions sütunu render edilmesi VehicleList/index.tsx içinde cell render ile yapılacak
+      // İşlemler sütunu, VehicleList/index.tsx içinde hücre render ile yapılacak
       { 
         id: 'actions',
         header: 'İşlemler', 

@@ -1,14 +1,15 @@
 'use client';
 import useSWRMutation from 'swr/mutation';
-import { apiFetcher } from '@/lib/api';
+import { apiRequest } from '@/lib/api-client';
 import { ClientCompanyFormValues } from './useClientForm';
 
 export function useCreateClient() {
   const { trigger, isMutating, error } = useSWRMutation(
     '/api/clients',
-    (url, { arg }: { arg: ClientCompanyFormValues }) => apiFetcher(url, {
+    (url, { arg }: { arg: ClientCompanyFormValues }) => apiRequest({ 
+      url,
       method: 'POST',
-      body: JSON.stringify(arg),
+      body: arg,
     })
   );
 

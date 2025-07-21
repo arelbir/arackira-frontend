@@ -2,17 +2,17 @@ import { useSWRConfig } from 'swr';
 import { toast } from 'sonner';
 import { VehicleCreateInput } from './schema';
 
-import { apiFetcher } from '@/lib/api';
+import { apiRequest } from '@/lib/api-client';
 
 // Draft creation (POST, returns id)
 async function createDraftFetcher(arg: { chassis_number: string; is_draft: boolean }) {
-  return apiFetcher('/api/vehicles', {
+  return apiRequest({
+    url: '/api/vehicles',
     method: 'POST',
-    body: JSON.stringify({
+    body: {
       chassis_number: arg.chassis_number,
-      is_draft: true
-    }),
-    headers: { 'Content-Type': 'application/json' }
+      is_draft: true,
+    },
   });
 }
 
@@ -78,10 +78,10 @@ async function updateVehicleFetcher(vehicleId: number, arg: VehicleCreateInput) 
   console.log('Filtrelenmiş ve düzeltilmiş payload:', whitelistedArg);
   console.log('=== DEBUG LOG END ===');
   
-  return apiFetcher(`/api/vehicles/${vehicleId}`, {
+  return apiRequest({
+    url: `/api/vehicles/${vehicleId}`,
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(whitelistedArg),
+    body: whitelistedArg,
   });
 }
 

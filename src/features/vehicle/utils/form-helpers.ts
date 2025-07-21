@@ -4,17 +4,16 @@
 import { VehicleCreateValues, vehicleCreateSchema } from '../../vehicle/create/create-tabs/schema';
 import { ValidationResult } from '../types/vehicle-form-context.types';
 import { REQUIRED_FIELDS } from './validation-constants';
+import { TransformedInspection, TransformedUtts, TransformedHgs, TransformedService } from './data-transformers'; // İlişkili modül tipleri eklendi
 
 /**
  * API'dan gelen verileri form şemasına uygun hale getiren yardımcı fonksiyon
  * @param apiData - API'dan gelen veri objesi
  * @returns Form şemasına uygun dönüştürülmüş veriler
  */
-export const mapApiDataToFormValues = (apiData: any): Partial<VehicleCreateValues> => {
-  // Schema ile uyumlu sadece geçerli alanları al
+export const mapApiDataToFormValues = (apiData: Record<string, any>): Partial<VehicleCreateValues> => {
   const formValues: Partial<VehicleCreateValues> = {};
   
-  // Numerik ID alanlarını sayı olarak dönüştür
   const numericFields = [
     'branch_id', 'vehicle_group_id', 'vehicle_type_id', 'brand_id', 
     'model_id', 'model_year', 'fuel_type_id', 'transmission_id', 
@@ -22,16 +21,13 @@ export const mapApiDataToFormValues = (apiData: any): Partial<VehicleCreateValue
     'vehicle_km', 'supplier_id'
   ];
   
-  // Schema'da tanımlı tüm alanlar için dönüşüm
   Object.keys(vehicleCreateSchema.shape).forEach(key => {
     if (key in apiData) {
       const typedKey = key as keyof VehicleCreateValues;
       if (numericFields.includes(key) && apiData[key] !== null && apiData[key] !== '') {
-        // Sayısal alan ve değer varsa Number'a dönüştür
-        formValues[typedKey] = Number(apiData[key]) as any;
+        formValues[typedKey] = Number(apiData[key]) as any; // Number dönüşümü
       } else {
-        // Diğer türdeki değerleri olduğu gibi al
-        formValues[typedKey] = apiData[key] as any;
+        formValues[typedKey] = apiData[key] as any; // Diğer türdeki değerleri olduğu gibi al
       }
     }
   });
@@ -45,30 +41,75 @@ export const mapApiDataToFormValues = (apiData: any): Partial<VehicleCreateValue
  * @returns Dönüştürülmüş nesne
  */
 export const convertEmptyDatesToNull = (obj: Record<string, any>): Record<string, any> => {
-  // Tarih alanları için kontrol edilecek patternler
   const dateFieldPatterns = [
-    /_date$/,       // *_date ile biten alanlar
-    /Date$/,        // *Date ile biten alanlar
-    /^date/         // date* ile başlayan alanlar
+    /_date$/,
+    /Date$/,
+    /^date/
   ];
   
-  // Dönüştürülmüş nesneyi oluştur
   const result: Record<string, any> = {};
   
-  // Her alan için kontrol et
   for (const [key, value] of Object.entries(obj)) {
-    // Nesne içinde nesne varsa recursive işlem yap
     if (value && typeof value === 'object' && !Array.isArray(value)) {
       result[key] = convertEmptyDatesToNull(value);
     } 
-    // Tarih alanı ve boş string kontrolü
     else if (
       dateFieldPatterns.some(pattern => pattern.test(key)) && 
       (value === '' || value === undefined)
     ) {
       result[key] = null;
     } 
-    // Diğer alanları olduğu gibi kopyala
+    else {
+      result[key] = value;
+    }
+  }
+  
+  return result;
+};
+
+/**
+ * ID alanlarını string'den number tipine dönüştüren utility fonksiyon
+ * Bu fonksiyon, formdan alınan ve backend'e gönderilecek veriyi işler
+ * * @param obj - Dönüştürülecek form verisi nesnesi
+ * @returns ID alanları number tipine dönüştürülmüş nesne
+ */
+export const convertStringIdsToNumbers = (obj: Record<string, any>): Record<string, any> => {
+  const idFieldPatterns = [
+    /_id$/,
+    /Id$/,
+  ];
+
+  const knownIdFields = [
+    'brand_id', 'model_id', 'color_id', 'supplier_id', 'vehicle_type_id', 
+    'fuel_type_id', 'branch_id', 'vehicle_status_id', 'transmission_id',
+    'vehicle_responsible_id', 'vehicle_group_id'
+  ];
+  
+  const result: Record<string, any> = {};
+  
+  for (const [key, value] of Object.entries(obj)) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      result[key] = convertStringIdsToNumbers(value);
+    }
+    else if (Array.isArray(value)) {
+      result[key] = value.map(item => 
+        typeof item === 'object' && item !== null 
+          ? convertStringIdsToNumbers(item)
+          : item
+      );
+    }
+    else if (knownIdFields.includes(key) && value !== null && value !== undefined && value !== '') {
+      const numValue = Number(value);
+      result[key] = !isNaN(numValue) ? numValue : value;
+    }
+    else if (
+      idFieldPatterns.some(pattern => pattern.test(key)) && 
+      (typeof value === 'string' || typeof value === 'number') &&
+      value !== '' && value !== null && value !== undefined &&
+      !isNaN(Number(value))
+    ) {
+      result[key] = Number(value);
+    }
     else {
       result[key] = value;
     }
@@ -86,10 +127,10 @@ export const convertEmptyDatesToNull = (obj: Record<string, any>): Record<string
 export const validateRequiredFields = (
   formValues: Partial<VehicleCreateValues>,
   modulesData: {
-    inspections: any[];
-    utts: any[];
-    hgs: any[];
-    services: any[];
+    inspections: TransformedInspection[]; // Tip güncellendi
+    utts: TransformedUtts[];             // Tip güncellendi
+    hgs: TransformedHgs[];               // Tip güncellendi
+    services: TransformedService[];      // Tip güncellendi
   }
 ): ValidationResult => {
   const errors: Record<string, string[]> = {};
@@ -106,11 +147,12 @@ export const validateRequiredFields = (
   
   const { inspections, utts, hgs, services } = modulesData;
   
-  // İnspection için zorunlu alan kontrolü (varsa)
+  // Muayene için zorunlu alan kontrolü (varsa)
   if (inspections.length > 0) {
     inspections.forEach((inspection, index) => {
       REQUIRED_FIELDS.inspections.forEach(field => {
-        if (!inspection[field]) {
+        // inspection[field] null veya undefined ise hata ver
+        if (inspection[field as keyof TransformedInspection] === null || inspection[field as keyof TransformedInspection] === undefined || inspection[field as keyof TransformedInspection] === '') {
           if (!errors.inspections) errors.inspections = [];
           errors.inspections.push(`Muayene #${index + 1}: ${field} alanı zorunludur`);
           valid = false;
@@ -123,7 +165,7 @@ export const validateRequiredFields = (
   if (utts.length > 0) {
     utts.forEach((utt, index) => {
       REQUIRED_FIELDS.utts.forEach(field => {
-        if (!utt[field]) {
+        if (utt[field as keyof TransformedUtts] === null || utt[field as keyof TransformedUtts] === undefined || utt[field as keyof TransformedUtts] === '') {
           if (!errors.utts) errors.utts = [];
           errors.utts.push(`UTTS #${index + 1}: ${field} alanı zorunludur`);
           valid = false;
@@ -136,7 +178,7 @@ export const validateRequiredFields = (
   if (hgs.length > 0) {
     hgs.forEach((hgsItem, index) => {
       REQUIRED_FIELDS.hgs.forEach(field => {
-        if (!hgsItem[field]) {
+        if (hgsItem[field as keyof TransformedHgs] === null || hgsItem[field as keyof TransformedHgs] === undefined || hgsItem[field as keyof TransformedHgs] === '') {
           if (!errors.hgs) errors.hgs = [];
           errors.hgs.push(`HGS #${index + 1}: ${field} alanı zorunludur`);
           valid = false;
@@ -149,7 +191,8 @@ export const validateRequiredFields = (
   if (services.length > 0) {
     services.forEach((service, index) => {
       REQUIRED_FIELDS.services.forEach(field => {
-        if (!service[field] && service[field] !== null) { // vat_group_id null olabilir
+        // service[field] null veya undefined ise hata ver
+        if (service[field as keyof TransformedService] === null || service[field as keyof TransformedService] === undefined || service[field as keyof TransformedService] === '') {
           if (!errors.services) errors.services = [];
           errors.services.push(`Servis #${index + 1}: ${field} alanı zorunludur`);
           valid = false;

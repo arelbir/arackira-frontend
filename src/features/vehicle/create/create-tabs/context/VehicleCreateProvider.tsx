@@ -1,251 +1,254 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import { useForm, FormProvider, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { vehicleCreateSchema, VehicleCreateValues } from "../schema";
 import { useNotification } from "@/components/ui/notification";
 import { useDraftManagement } from "@/features/vehicle/hooks/useDraftManagement";
 import { useVehicleEdit } from "@/features/vehicle/hooks/useVehicleEdit";
-import { VehicleService } from "@/features/vehicle/services/VehicleService";
 import { validateRequiredFields } from "@/features/vehicle/utils/form-helpers";
-import { 
-  VehicleFormContextType as VehicleFormContextTypeImport, 
-  VehicleCreateProviderProps as VehicleCreateProviderPropsImport 
+import { apiRequest } from "@/lib/api-client";
+import {
+  VehicleFormContextType as VehicleFormContextTypeImport,
+  VehicleCreateProviderProps as VehicleCreateProviderPropsImport
 } from "@/features/vehicle/types/vehicle-form-context.types";
+import {
+  TransformedInsurance,
+  TransformedInspection,
+  TransformedUtts,
+  TransformedHgs,
+  TransformedGps,
+  TransformedService,
+  transformAPIResponse,
+  transformFormToAPI,
+  TransformedAPIResponse,
+  TransformedIncludedData // TransformedIncludedData eklendi
+} from "@/features/vehicle/utils/data-transformers";
+import DraftDialog from "../components/DraftDialog";
 
 // Re-export types for use in other files
 export type VehicleFormContextType = VehicleFormContextTypeImport;
 export type VehicleCreateProviderProps = VehicleCreateProviderPropsImport;
-import DraftDialog from "../components/DraftDialog";
 
-// Context oluşturma
+// API yanıtı için daha spesifik bir tip
+interface ApiResponse<T> {
+  data?: T;
+  errors?: { [key: string]: string[] | string };
+  message?: string;
+}
+
+// useDraftManagement kancasının beklenen dönüş tipi (hatalara göre güncellendi)
+interface UseDraftManagementResult {
+  showDraftDialog: boolean;
+  setShowDraftDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  setUseDraft: React.Dispatch<React.SetStateAction<boolean>>;
+  saveDraft: (mainFormValues: Partial<VehicleCreateValues> & { included?: TransformedIncludedData }) => void; // Tüm veriyi kabul edecek şekilde güncellendi
+  clearDraft: () => void;
+  // loadDraft bu kancanın dönüş tipinde yok, bu yüzden dışarıdan yönetilecek.
+}
+
+// useVehicleEdit kancasının beklenen dönüş tipi (hatalara göre güncellendi)
+interface UseVehicleEditResult {
+  isLoading: boolean;
+  error: any;
+  // onDataFetched prop'u kaldırıldığı için, kancanın dönüştürülmüş veriyi doğrudan döndürdüğünü varsayalım.
+  // Bu, kancanın içindeki API çağrısından sonra veriyi dönüştürüp döndürmesi gerektiği anlamına gelir.
+  transformedData?: TransformedAPIResponse;
+}
+
+
 const VehicleFormContext = createContext<VehicleFormContextType | null>(null);
 
-/**
- * Araç ve ilişkili modüllerini yöneten geliştirilmiş provider
- */
-export const VehicleCreateProvider: React.FC<VehicleCreateProviderProps> = ({ 
-  children, 
-  defaultValues, 
-  editMode = false, 
-  vehicleToEdit 
+export const VehicleCreateProvider: React.FC<VehicleCreateProviderProps> = ({
+  children,
+  defaultValues,
+  editMode = false,
+  vehicleToEdit,
 }) => {
-  // Temel durumlar
-  const [isLoading, setIsLoading] = useState(editMode && !!vehicleToEdit);
+  // --- 1. STATE AND FORM INITIALIZATION ---
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [vehicleId, setVehicleId] = useState<number | null>(vehicleToEdit || null);
+  const [vehicleId, setVehicleId] = useState<number | null>(
+    vehicleToEdit && 'id' in vehicleToEdit && typeof vehicleToEdit.id === 'number' ? vehicleToEdit.id : null
+  );
   const { success, error: showError } = useNotification();
-  
-  // İlişkili modül state'leri
-  const [insurances, setInsurances] = useState<any[]>([]);
-  const [inspections, setInspections] = useState<any[]>([]);
-  const [hgs, setHgs] = useState<any[]>([]);
-  const [utts, setUtts] = useState<any[]>([]);
-  const [services, setServices] = useState<any[]>([]);
-  
-  // Form tanımlama
+
   const methods = useForm<VehicleCreateValues>({
     resolver: zodResolver(vehicleCreateSchema),
     defaultValues: defaultValues || {},
     mode: "onChange",
   });
 
-  // Draft yönetimi
-  const { 
-    showDraftDialog, 
-    setShowDraftDialog, 
-    setUseDraft, 
-    saveDraft,
-    clearDraft
-  } = useDraftManagement({
-    form: methods,
-    editMode
+  const [relatedData, setRelatedDataState] = useState<TransformedIncludedData>({
+    insurances: [], inspections: [], hgs: [], utts: [], gps: [], services: []
   });
 
-  // Düzenleme işlemleri
-  const { 
-    fetchVehicleData, 
-    isLoading: isEditLoading, 
-    error: editError 
-  } = useVehicleEdit({
+  // State for managing GPS editing
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // --- 2. HOOKS AND CALLBACKS ---
+
+  const { draft, showDraftDialog, setShowDraftDialog, useDraft, setUseDraft, saveDraft, clearDraft } = useDraftManagement({
     form: methods,
     editMode,
-    setVehicleId,
-    vehicleId
   });
 
-  // Verileri fetch etme
-  const handleFetchVehicleData = async (id: number) => {
-    setIsLoading(true);
-    try {
-      const response = await VehicleService.fetchVehicleWithRelated(id);
-      
-      // İlişkili modülleri state'lere yükle
-      if (response?.data) {
-        if (response.data.insurances) setInsurances(response.data.insurances);
-        if (response.data.inspections) setInspections(response.data.inspections);
-        if (response.data.hgs) setHgs(response.data.hgs);
-        if (response.data.utts) setUtts(response.data.utts);
-        if (response.data.services) setServices(response.data.services);
-      }
-      
-      return response;
-    } catch (err) {
-      showError(err instanceof Error ? err.message : 'Araç verileri çekilirken hata oluştu');
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const setRelatedData = useCallback((data: TransformedIncludedData) => {
+    setRelatedDataState(data);
+  }, []);
 
-  /**
-   * Zorunlu alanların varlığını kontrol eden fonksiyon
-   */
-  const checkRequiredFields = () => {
-    return validateRequiredFields(
-      methods.getValues(),
-      { inspections, utts, hgs, services }
-    );
-  };
-  
-  /**
-   * Tüm ilişkili modül verilerini bir arada gönderen fonksiyon
-   */
-  const submitWithRelated = async () => {
-    setIsSubmitting(true);
-    
-    try {
-      // Form validasyonu
-      const validation = await methods.trigger();
-      if (!validation) {
-        showError("Form alanlarında hatalar var. Lütfen kontrol edin.", "Form Hatası");
-        console.log("Form hataları:", methods.formState.errors);
-        return null;
+  const handleFetchSuccess = useCallback((data: TransformedAPIResponse) => {
+    methods.reset(data.vehicleData);
+    setRelatedData(data.included);
+  }, [methods, setRelatedData]);
+
+  const { isLoading } = useVehicleEdit({
+    editMode,
+    vehicleId,
+    setVehicleId, // Pass the setter function
+    onFetchSuccess: handleFetchSuccess, // Pass the handler
+    onRelatedModulesFetched: setRelatedData, // Pass the handler
+  });
+
+  // --- 3. EFFECTS ---
+
+  // EFFECT 1: Handle initial data from props (for edit mode)
+  useEffect(() => {
+    if (editMode && vehicleToEdit) {
+      methods.reset(vehicleToEdit);
+    }
+  }, [editMode, vehicleToEdit, methods]);
+
+  // EFFECT 2: Handle user's decision on using a draft
+  useEffect(() => {
+    if (useDraft && draft) {
+      methods.reset(draft as Partial<VehicleCreateValues>);
+      if (draft.included) {
+        setRelatedData(draft.included);
       }
-      
-      // Zorunlu alan kontrolü
+    } else if (useDraft === false) {
+      clearDraft();
+    }
+  }, [useDraft, draft, methods, setRelatedData, clearDraft]);
+
+  // EFFECT 3: Watch for form changes to save draft
+  useEffect(() => {
+    if (!editMode) {
+      const subscription = methods.watch((value) => {
+        saveDraft({ ...(value as Partial<VehicleCreateValues>), included: relatedData });
+      });
+      return () => subscription.unsubscribe();
+    }
+  }, [editMode, methods, saveDraft, relatedData]);
+
+  // --- 4. HELPER AND SUBMIT FUNCTIONS ---
+  const checkRequiredFields = useCallback(() => {
+    return validateRequiredFields(methods.getValues(), relatedData);
+  }, [methods, relatedData]);
+
+  const submitWithRelated = useCallback(async () => {
+    setIsSubmitting(true);
+    try {
       const requiredFieldsCheck = checkRequiredFields();
       if (!requiredFieldsCheck.valid) {
-        showError(
-          "Bazı zorunlu alanlar eksik. Lütfen kontrol edin.",
-          "Zorunlu Alan Hatası"
-        );
-        console.log("Zorunlu alan hataları:", requiredFieldsCheck.errors);
+        showError("Bazı zorunlu alanlar eksik.", "Zorunlu Alan Hatası");
         return null;
       }
-      
-      // Form verilerini al
-      const formValues = methods.getValues();
-      
-      // Servisi kullanarak API çağrısı yap
-      const response = await VehicleService.submitWithRelated(
-        formValues, 
-        { insurances, inspections, utts, hgs, services },
-        editMode,
-        vehicleId || undefined
-      );
-      
-      // Hata kontrolü
-      if (response?.data?.errors && Object.keys(response.data.errors).length > 0) {
-        // İlişkili modüllerdeki hatalar
-        const errorMessages: string[] = [];
-        
-        for (const [module, moduleErrors] of Object.entries(response.data.errors)) {
-          if (Array.isArray(moduleErrors) && moduleErrors.length > 0) {
-            moduleErrors.forEach(err => {
-              errorMessages.push(`${module.toUpperCase()}: ${err.error || JSON.stringify(err)}`);
-            });
-          }
-        }
-        
-        if (errorMessages.length > 0) {
-          showError(
-            `Bazı modüllerde kayıt sırasında hata oluştu:\n${errorMessages.join('\n')}`,
-            "Kayıt Hatası"
-          );
-        }
-      } 
-      // Tüm işlem başarılı
-      else {
-        success(
-          "Araç ve ilişkili verileri başarıyla kaydedildi.",
-          editMode ? "Araç güncellendi" : "Araç oluşturuldu"
+
+      const formData = methods.getValues();
+      const apiPayload = transformFormToAPI(formData, relatedData);
+
+      const response: ApiResponse<{ vehicle?: { id: number } }> = await apiRequest({
+        url: editMode && vehicleId ? `vehicles/${vehicleId}` : 'vehicles',
+        method: editMode ? 'PUT' : 'POST',
+        body: apiPayload,
+        requiresAuth: true,
+      });
+
+      if (response && response.errors) {
+        const errorMessages = Object.entries(response.errors).map(([module, errs]) =>
+          `${module.toUpperCase()}: ${Array.isArray(errs) ? errs.map((e: any) => (typeof e === 'object' && e !== null && 'error' in e) ? e.error : JSON.stringify(e)).join(', ') : errs}`
         );
-        
-        if (!editMode && response?.data?.vehicle?.id) {
-          setVehicleId(response.data.vehicle.id);
-        }
-        
-        // Draft temizle
+        showError(`Kayıt sırasında hata: ${errorMessages.join('\n')}`, "Kayıt Hatası");
+      } else {
+        success(editMode ? "Araç güncellendi" : "Araç oluşturuldu");
         clearDraft();
+        if (!editMode && response?.data?.vehicle) {
+          setVehicleId(response.data.vehicle.id);
+          methods.reset({});
+          setRelatedDataState({ insurances: [], inspections: [], hgs: [], utts: [], gps: [], services: [] });
+        } else if (editMode) {
+          // In edit mode, refetching is handled by useVehicleEdit if vehicleId changes.
+          // We might want to manually trigger a refetch or update state here if the API returns data.
+        }
       }
-      
       return response;
     } catch (error) {
-      console.error('submitWithRelated error:', error);
-      showError(
-        error instanceof Error ? error.message : "Beklenmeyen bir hata oluştu",
-        "Hata"
-      );
+      showError(error instanceof Error ? error.message : "Beklenmeyen bir hata oluştu", "Hata");
       return null;
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [
+    editMode,
+    vehicleId,
+    methods,
+    relatedData,
+    checkRequiredFields,
+    showError,
+    success,
+    clearDraft,
+  ]);
 
-  // Form değişikliklerini izleyerek draft kaydet (düzenleme modunda değil)
-  useEffect(() => {
-    if (!editMode) {
-      const subscription = methods.watch((value) => {
-        saveDraft(value as Partial<VehicleCreateValues>);
-      });
-      
-      return () => subscription.unsubscribe();
-    }
-  }, [editMode, methods, saveDraft]);
+  // --- 5. RENDER ---
+
+  const contextValue = useMemo(() => ({
+    form: methods,
+    vehicleId,
+    setVehicleId,
+    editMode,
+    isLoading,
+    isSubmitting,
+    relatedData,
+    setRelatedData,
+    submitWithRelated,
+    validateRequiredFields: checkRequiredFields,
+    editingIndex,
+    setEditingIndex,
+    isEditing,
+    setIsEditing,
+  }), [
+    methods,
+    vehicleId,
+    editMode,
+    isLoading,
+    isSubmitting,
+    relatedData,
+    setRelatedData,
+    submitWithRelated,
+    checkRequiredFields,
+    editingIndex,
+    setEditingIndex,
+    isEditing,
+    setIsEditing,
+    setVehicleId, // Add setVehicleId to dependency array
+  ]);
 
   return (
     <>
-      {/* Draft dialog */}
-      <DraftDialog 
-        open={showDraftDialog} 
-        onOpenChange={setShowDraftDialog} 
-        onDraftDecision={(use) => setUseDraft(use)} 
+      <DraftDialog
+        open={showDraftDialog}
+        onOpenChange={setShowDraftDialog}
+        onDraftDecision={setUseDraft}
       />
-      
-      {/* Context provider */}
-      <VehicleFormContext.Provider value={{ 
-        form: methods, 
-        vehicleId, 
-        setVehicleId, 
-        editMode, 
-        isLoading: isLoading || isEditLoading,
-        isSubmitting,
-        // İlişkili modül verileri
-        insurances,
-        setInsurances,
-        inspections,
-        setInspections,
-        hgs,
-        setHgs,
-        utts,
-        setUtts,
-        services,
-        setServices,
-        // Fonksiyonlar
-        submitWithRelated,
-        validateRequiredFields: checkRequiredFields
-      }}>
+      <VehicleFormContext.Provider value={contextValue}>
         <FormProvider {...methods}>{children}</FormProvider>
       </VehicleFormContext.Provider>
     </>
   );
 };
 
-/**
- * Araç formu ve ilgili verilere erişim için custom hook
- */
 export const useVehicleForm = () => {
   const context = useContext(VehicleFormContext);
   if (!context) {

@@ -3,6 +3,7 @@
  */
 import { UseFormReturn } from "react-hook-form";
 import { VehicleCreateValues } from "../../vehicle/create/create-tabs/schema";
+import { TransformedIncludedData } from "../utils/data-transformers";
 
 /**
  * Araç ve ilişkili modül verileri için context tipi tanımı
@@ -17,20 +18,18 @@ export interface VehicleFormContextType {
   isSubmitting: boolean;
   
   // İlişkili modül verileri ve yönetim metodları
-  insurances: any[];
-  setInsurances: React.Dispatch<React.SetStateAction<any[]>>;
-  inspections: any[];
-  setInspections: React.Dispatch<React.SetStateAction<any[]>>;
-  hgs: any[];
-  setHgs: React.Dispatch<React.SetStateAction<any[]>>;
-  utts: any[];
-  setUtts: React.Dispatch<React.SetStateAction<any[]>>;
-  services: any[];
-  setServices: React.Dispatch<React.SetStateAction<any[]>>;
+  relatedData: TransformedIncludedData;
+  setRelatedData: (data: TransformedIncludedData) => void;
   
   // API işlemleri
   submitWithRelated: () => Promise<any>;
   validateRequiredFields: () => { valid: boolean; errors: Record<string, string[]> };
+
+  // GPS Düzenleme State'leri
+  editingIndex: number | null;
+  setEditingIndex: React.Dispatch<React.SetStateAction<number | null>>;
+  isEditing: boolean;
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 /**
@@ -43,8 +42,8 @@ export interface VehicleCreateProviderProps {
   defaultValues?: Partial<VehicleCreateValues>;
   /** Düzenleme modu aktif mi */
   editMode?: boolean;
-  /** Düzenlenecek aracın ID'si */
-  vehicleToEdit?: number;
+  /** Düzenlenecek aracın verileri */
+  vehicleToEdit?: Partial<VehicleCreateValues>;
 }
 
 /**

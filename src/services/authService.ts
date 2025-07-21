@@ -1,6 +1,7 @@
 // src/services/authService.ts
 import { z } from 'zod';
 import { apiRequest } from '@/lib/api-client';
+import Cookies from 'js-cookie';
 
 // Auth User için Zod şeması
 export const AuthUserSchema = z.object({
@@ -34,7 +35,8 @@ export async function login(
     
     // Token'i sakla (client-side)
     if (data.token && typeof window !== 'undefined') {
-      localStorage.setItem('token', data.token);
+            localStorage.setItem('token', data.token);
+      Cookies.set('token', data.token, { expires: 7, path: '/' });
     }
     
     return data.user;
@@ -59,7 +61,8 @@ export async function register(
     
     // Token'i sakla (client-side)
     if (data.token && typeof window !== 'undefined') {
-      localStorage.setItem('token', data.token);
+            localStorage.setItem('token', data.token);
+      Cookies.set('token', data.token, { expires: 7, path: '/' });
     }
     
     return data.user;
@@ -78,13 +81,15 @@ export async function logout(token?: string | null): Promise<void> {
     
     // Token'i kaldır (client-side)
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
+            localStorage.removeItem('token');
+      Cookies.remove('token', { path: '/' });
     }
   } catch (error) {
     console.error('Logout error:', error);
     // Çıkış yaparken hata olsa bile token'i kaldır
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
+            localStorage.removeItem('token');
+      Cookies.remove('token', { path: '/' });
     }
   }
 }

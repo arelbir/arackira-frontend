@@ -2,12 +2,12 @@
 
 import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Drawer } from "@/components/ui/drawer";
+import { Drawer, DrawerTrigger } from "@/components/ui/drawer";
 import { DrawerForm } from "@/components/ui/form/drawer-form";
 import { toast } from "sonner";
 
-import { useVehicleForm } from "../context/VehicleCreateProvider";
-import { CreateTabContent } from "../TabNavigator";
+import { useVehicleForm } from "../../context/VehicleCreateProvider";
+import { CreateTabContent } from "../../TabNavigator";
 import { InsuranceTable } from "./InsuranceTable";
 import { InsuranceForm } from "./InsuranceForm";
 import { EmptyState } from "@/components/ui/shared/empty-state";
@@ -69,30 +69,41 @@ export function InsuranceTab() {
     <CreateTabContent value="insurance">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold">Sigorta Kayıtları</h2>
-        <Button
-          type="button"
-          variant="default"
-          onClick={handleAddNew}
-        >
-          <PlusIcon className="size-4 mr-2" />
-          Sigorta Ekle
-        </Button>
+        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="right">
+          <DrawerTrigger asChild>
+            <Button type="button" variant="default" onClick={handleAddNew}>
+              <PlusIcon className="size-4 mr-2" />
+              Sigorta Ekle
+            </Button>
+          </DrawerTrigger>
+          <DrawerForm
+            title={editingIndex === null ? INSURANCE_MESSAGES.NEW : INSURANCE_MESSAGES.EDIT}
+            onCancel={() => setIsDrawerOpen(false)}
+            onSave={handleSave}
+          >
+            <div className="p-6 pt-2 pb-8">
+              <FormProvider {...methods}>
+                <InsuranceForm
+                  index={editingIndex !== null ? editingIndex : fields.length}
+                  initialData={editingIndex !== null ? fields[editingIndex] : undefined}
+                  lookups={lookups}
+                  onClose={() => setIsDrawerOpen(false)}
+                  onSave={handleSave}
+                />
+              </FormProvider>
+            </div>
+          </DrawerForm>
+        </Drawer>
       </div>
-      
+
       {fields.length === 0 ? (
-        <EmptyState 
-          icon={
-            <svg xmlns="http://www.w3.org/2000/svg" className="size-12 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C7 4 2 6 2 11v5a2 2 0 002 2h16a2 2 0 002-2v-5c0-5-5-7-10-9zm0 0v2m0 0c2.5 1 5 2 5 7v5" />
-            </svg>
-          }
-          title="Henüz sigorta kaydı yok"
-          description="Yeni bir sigorta eklemek için yukarıdaki butonu kullanın."
-        />
+        <div className="flex items-center justify-center h-64 border rounded-md">
+          <p className="text-gray-500">Henüz sigorta kaydı yok.</p>
+        </div>
       ) : (
         <div className="flex-1 min-h-[300px] flex flex-col overflow-auto w-full mb-4 border rounded-md">
-          <InsuranceTable 
-            insurances={fields} 
+          <InsuranceTable
+            insurances={fields}
             onEdit={handleEdit}
             onDelete={(index) => {
               setDeleteIndex(index);
@@ -103,27 +114,6 @@ export function InsuranceTab() {
           />
         </div>
       )}
-      
-      {/* Drawer (Sağdan Açılan Form Paneli) */}
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="right">
-        <DrawerForm
-          title={editingIndex === null ? INSURANCE_MESSAGES.NEW : INSURANCE_MESSAGES.EDIT}
-          onCancel={() => setIsDrawerOpen(false)}
-          onSave={() => handleSave(form)}
-        >
-          <div className="p-6 pt-2 pb-8">
-            <FormProvider {...methods}>
-              <InsuranceForm
-                index={editingIndex !== null ? editingIndex : fields.length}
-                initialData={editingIndex !== null ? fields[editingIndex] : undefined}
-                lookups={lookups}
-                onClose={() => setIsDrawerOpen(false)}
-                onSave={() => handleSave(form)}
-              />
-            </FormProvider>
-          </div>
-        </DrawerForm>
-      </Drawer>
       
       {/* Silme Onay Dialog'u */}
       <InsuranceDeleteConfirmDialog

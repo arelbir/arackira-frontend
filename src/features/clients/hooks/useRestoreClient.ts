@@ -1,10 +1,10 @@
 import useSWRMutation from 'swr/mutation';
-import { apiFetcher } from '@/lib/api';
+import { apiRequest } from '@/lib/api-client';
 
 export function useRestoreClient() {
   const { trigger, isMutating, error } = useSWRMutation(
     '/api/clients',
-    (url: string, { arg }: { arg: number }) => apiFetcher(`/api/clients/${arg}/restore`, { method: 'POST' })
+    (url: string, { arg }: { arg: number }) => apiRequest({ url: `/api/clients/${arg}/restore`, method: 'POST' })
   );
 
   return {

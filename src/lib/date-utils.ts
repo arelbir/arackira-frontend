@@ -33,3 +33,55 @@ export function isDateExpired(date: string | Date | null | undefined): boolean {
   const today = new Date();
   return checkDate.getTime() < today.getTime();
 }
+
+/**
+ * API'dan gelen tarih string'ini form için uygun formata çevirir (YYYY-MM-DD)
+ * @param dateString - API'dan gelen ISO formatında tarih
+ * @returns Form için uygun formatta tarih (YYYY-MM-DD) veya undefined
+ */
+export function formatDateForForm(dateString: string | undefined): string | undefined {
+  if (!dateString) return undefined;
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return undefined;
+    return date.toISOString().split('T')[0]; // YYYY-MM-DD
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Form tarih değerini API için uygun formata çevirir (ISO format)
+ * @param dateString - Form formatında tarih (YYYY-MM-DD)
+ * @returns API için uygun formatta tarih (ISO) veya undefined
+ */
+export function formatDateForAPI(dateString: string | undefined): string | undefined {
+  if (!dateString) return undefined;
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return undefined;
+    return date.toISOString();
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Tarih string'ini kullanıcı arayüzü için Türkçe formatına çevirir (DD.MM.YYYY)
+ * @param dateString - Herhangi bir formattaki tarih string'i
+ * @returns Türkçe formatta tarih (DD.MM.YYYY) veya "-"
+ */
+export function formatDateForDisplay(dateString: string | undefined): string {
+  if (!dateString) return "-";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString('tr-TR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  } catch {
+    return "-";
+  }
+}

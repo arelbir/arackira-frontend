@@ -1,10 +1,12 @@
 /**
- * Draft yönetimi için custom hook
+ * Taslak yönetimi için custom hook
+ * Form verilerini yerel depolamada taslak olarak kaydetme ve geri yükleme işlevselliği sağlar.
  */
 import { useState, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { DRAFT_KEY } from "../utils/storage-constants";
 import { VehicleCreateValues } from "../../vehicle/create/create-tabs/schema";
+import { TransformedIncludedData } from "../utils/data-transformers"; // Yeni import
 
 interface UseDraftManagementProps {
   form: UseFormReturn<VehicleCreateValues>;
@@ -12,34 +14,35 @@ interface UseDraftManagementProps {
 }
 
 interface UseDraftManagementResult {
-  draft: Partial<VehicleCreateValues> | null;
+  draft: (Partial<VehicleCreateValues> & { included?: TransformedIncludedData }) | null;
   showDraftDialog: boolean;
   setShowDraftDialog: (show: boolean) => void;
   useDraft: boolean | null;
   setUseDraft: (use: boolean | null) => void;
-  saveDraft: (formData: Partial<VehicleCreateValues>) => void;
+  // saveDraft, ana form verileriyle birlikte ilişkili modül verilerini de kabul edecek şekilde güncellendi
+  saveDraft: (formData: Partial<VehicleCreateValues> & { included?: TransformedIncludedData }) => void;
   clearDraft: () => void;
 }
 
 /**
- * Draft verilerinin yönetimi için custom hook
- * @param props - Draft yönetimi için gerekli parametreler
- * @returns Draft yönetimi için state ve fonksiyonlar
+ * Taslak verilerinin yönetimi için custom hook
+ * @param props - Taslak yönetimi için gerekli parametreler
+ * @returns Taslak yönetimi için state ve fonksiyonlar
  */
 export const useDraftManagement = ({
   form,
   editMode
 }: UseDraftManagementProps): UseDraftManagementResult => {
   const [mounted, setMounted] = useState(false);
-  const [draft, setDraft] = useState<Partial<VehicleCreateValues> | null>(null);
+  const [draft, setDraft] = useState<(Partial<VehicleCreateValues> & { included?: TransformedIncludedData }) | null>(null);
   const [showDraftDialog, setShowDraftDialog] = useState(false);
   const [useDraft, setUseDraft] = useState<boolean | null>(null);
 
-  // İlk yüklenme ve draft kontrolü
+  // İlk yüklenme ve taslak kontrolü
   useEffect(() => {
     setMounted(true);
     
-    // Düzenleme modunda draft kullanılmaz
+    // Düzenleme modunda taslak kullanılmaz
     if (editMode) return;
     
     // Taslağı local storage'dan al
@@ -50,13 +53,13 @@ export const useDraftManagement = ({
         setDraft(parsedDraft);
         setShowDraftDialog(true);
       } catch (err) {
-        console.error("Draft parsing error:", err);
+        console.error("Taslak ayrıştırma hatası:", err);
         localStorage.removeItem(DRAFT_KEY);
       }
     }
   }, [editMode]);
 
-  // Draft kullanma kararı verilirse
+  // Taslak kullanma kararı verilirse
   useEffect(() => {
     if (useDraft === true && draft) {
       form.reset(draft);
@@ -66,21 +69,22 @@ export const useDraftManagement = ({
   }, [useDraft, draft, form]);
 
   /**
-   * Formun mevcut durumunu draft olarak kaydet
-   * @param formData - Form verileri
+   * Formun mevcut durumunu taslak olarak kaydet
+   * @param formData - Form verileri (ana form ve opsiyonel olarak ilişkili modüller)
    */
-  const saveDraft = (formData: Partial<VehicleCreateValues>) => {
+  const saveDraft = (formData: Partial<VehicleCreateValues> & { included?: TransformedIncludedData }) => {
     if (!editMode) {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
     }
   };
 
   /**
-   * Draft verisini temizle
+   * Taslak verisini temizle
    */
   const clearDraft = () => {
     localStorage.removeItem(DRAFT_KEY);
     setDraft(null);
+    setShowDraftDialog(false);
   };
 
   return {

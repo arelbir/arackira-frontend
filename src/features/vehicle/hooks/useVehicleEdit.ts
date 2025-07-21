@@ -1,116 +1,85 @@
-/**
- * Araç düzenleme için custom hook
- */
-import { useState, useEffect } from "react";
-import { UseFormReturn } from "react-hook-form";
-import { VehicleCreateValues } from "../../vehicle/create/create-tabs/schema";
-import { apiRequest } from "@/lib/api-client";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNotification } from "@/components/ui/notification";
-import { mapApiDataToFormValues } from "../utils/form-helpers";
+import { transformAPIResponse, TransformedAPIResponse } from "../utils/data-transformers";
+import { apiRequest } from "@/lib/api-client";
 
-interface UseVehicleEditProps {
-  /**
-   * Araç düzenleme formu
-   */
-  form: UseFormReturn<VehicleCreateValues>;
-  
-  /**
-   * Düzenleme modu aktif mi
-   */
-  editMode: boolean;
-  
-  /**
-   * Araç ID'sini güncelleyen callback
-   */
-  setVehicleId: (id: number) => void;
-  
-  /**
-   * Mevcut araç ID'si
-   */
-  vehicleId: number | null;
+// API'den gelen ham yanıtın yapısını tanımlar
+interface VehicleCompleteApiResponse {
+  data: any;
+  included: any;
 }
 
+// Bu interface, hook'umuzun alacağı props'ları tanımlar.
+// State'i yukarıya, yani parent bileşene taşımak için callback'ler alır.
+interface UseVehicleEditProps {
+  editMode: boolean;
+  vehicleId?: number | object | null;
+  setVehicleId: (id: number | null) => void;
+  onRelatedModulesFetched: (data: any) => void;
+  onFetchSuccess: (data: TransformedAPIResponse) => void; // Çekilen veriyi yukarıya iletmek için callback
+}
+
+// Hook sadece yüklenme ve hata durumlarını döndürecek.
+// Veri state'i parent tarafından yönetilecek.
 interface UseVehicleEditResult {
-  /**
-   * Araç verilerini getiren fonksiyon
-   */
-  fetchVehicleData: (id: number) => Promise<any>;
-  
-  /**
-   * Yükleniyor durumu
-   */
   isLoading: boolean;
-  
-  /**
-   * Hata durumu
-   */
   error: string | null;
-  
-  /**
-   * İlişkili modülleri ayarlayan fonksiyon
-   */
-  setRelatedModules?: (data: any) => void;
 }
 
 /**
- * Araç düzenleme işlemleri için custom hook
+ * Düzenleme modunda tam araç verilerini çeken hook.
+ * Çekilen veriyi kendi içinde tutmaz, çağıran bileşene yukarı taşır.
  */
 export const useVehicleEdit = ({
-  form,
   editMode,
-  setVehicleId,
-  vehicleId: currentVehicleId
+  vehicleId: vehicleIdProp,
+  onRelatedModulesFetched,
+  onFetchSuccess,
 }: UseVehicleEditProps): UseVehicleEditResult => {
-  const [isLoading, setIsLoading] = useState(false);
+  // Prop olarak gelen vehicleId'yi gereksiz render'lardan kaçınmak için kontrol et.
+  const vehicleId = typeof vehicleIdProp === 'object' && vehicleIdProp !== null && 'id' in vehicleIdProp ? (vehicleIdProp as any).id : vehicleIdProp;
+
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasFetched = useRef(false);
   const { success, error: showError } = useNotification();
-  
-  /**
-   * Araç verilerini getiren fonksiyon
-   */
-  const fetchVehicleData = async (id: number) => {
+
+  const fetchVehicleData = useCallback(async (id: number) => {
     setIsLoading(true);
+    setError(null);
+
     try {
-      // API'dan veri çek
-      const response = await apiRequest({
-        url: `vehicles/${id}/complete`,
-        method: 'GET',
-        requiresAuth: true
-      }) as { data?: any };
-      
-      if (!response || typeof response !== 'object' || !('data' in response)) {
-        throw new Error('API yanıtı geçersiz format');
+      const response = await apiRequest<VehicleCompleteApiResponse>({ url: `/vehicles/${id}/complete`, method: 'GET' });
+      if (!response || !response.data) {
+        throw new Error('API yanıtı geçersiz veya boş.');
       }
 
-      // Form verilerini resetle
-      const formValues = mapApiDataToFormValues(response.data);
-      form.reset(formValues);
-      
-      // Araç ID'sini güncelle
-      setVehicleId(id);
-      setError(null);
-      
-      return response;
+      const allData = transformAPIResponse(response);
+      onFetchSuccess(allData); // Ana veriyi Provider'a iletiyoruz.
+      onRelatedModulesFetched(allData.included); // İlişkili modülleri Provider'a iletiyoruz.
+
+      success("Araç verileri başarıyla yüklendi.");
+      return allData;
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu';
-      setError(errorMsg);
-      showError(errorMsg, "Araç Verisi Çekilemedi");
+      const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen bir hata oluştu';
+      setError(errorMessage);
+      showError(`Veri yüklenirken hata: ${errorMessage}`);
       return null;
     } finally {
       setIsLoading(false);
     }
-  };
-  
-  // Başlangıçta vehicleId varsa, verileri otomatik yükle
+  }, [onFetchSuccess, onRelatedModulesFetched, showError, success]);
+
   useEffect(() => {
-    if (editMode && currentVehicleId && !isLoading) {
-      fetchVehicleData(currentVehicleId);
+    // Sadece vehicleId varsa ve daha önce veri çekilmemişse işlemi başlat.
+    if (vehicleId && !hasFetched.current) {
+      fetchVehicleData(vehicleId as number);
+      hasFetched.current = true; // Veri çekme denemesinin yapıldığını işaretle.
     }
-  }, [editMode, currentVehicleId]);
-  
+  }, [vehicleId, fetchVehicleData]);
+
   return {
-    fetchVehicleData,
     isLoading,
-    error
+    error,
   };
 };

@@ -12,7 +12,7 @@ export async function apiRequest<T>({
   customHeaders = {},
   token = null,
 }: {
-  url: string;
+  url: string | any[]; // SWR'dan gelen dizi key'leri desteklemek için any[] eklendi
   method?: string;
   body?: any;
   schema?: z.ZodType<T>;
@@ -20,7 +20,21 @@ export async function apiRequest<T>({
   customHeaders?: Record<string, string>;
   token?: string | null;
 }): Promise<T> {
+  // SWR'dan gelen key array ise ilk elemanını URL olarak al
+  const actualUrl = (Array.isArray(url) ? url[0] : url) as string;
+
   try {
+    // URL'in string olup olmadığını kontrol et
+    if (typeof actualUrl !== 'string' || !actualUrl) {
+      const error = new Error('Geçersiz URL formatı. URL bir string olmalıdır.');
+      console.error('API isteği sırasında hata:', { 
+        message: error.message, 
+        url, 
+        method, 
+      });
+      throw error;
+    }
+
     // Başlangıç headers ayarla
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -28,24 +42,31 @@ export async function apiRequest<T>({
     };
     
     // URL yapısını kontrol et ve gerekirse taban URL ile birleştir
-    let fullUrl = url;
+    let fullUrl = actualUrl;
     
     // Eğer URL mutlak değilse (http:// veya https:// ile başlamıyorsa) base URL ekle
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    if (!actualUrl.startsWith('http://') && !actualUrl.startsWith('https://')) {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4000';
       // URL ve base URL arasında çift slash olmamasını sağla
       const baseUrlWithoutTrailingSlash = baseUrl.endsWith('/')
         ? baseUrl.slice(0, -1)
         : baseUrl;
-      const urlWithoutLeadingSlash = url.startsWith('/')
-        ? url.slice(1)
-        : url;
+      
+      // URL'e /api/ prefix'i ekle (eğer yoksa)
+      let apiPath = actualUrl;
+      if (!actualUrl.startsWith('/api/') && !actualUrl.startsWith('api/')) {
+        apiPath = actualUrl.startsWith('/') ? `/api${actualUrl}` : `api/${actualUrl}`;
+      }
+      
+      const urlWithoutLeadingSlash = apiPath.startsWith('/')
+        ? apiPath.slice(1)
+        : apiPath;
       
       fullUrl = `${baseUrlWithoutTrailingSlash}/${urlWithoutLeadingSlash}`;
     }
     
     // Debug bilgisi: URL'i logla
-    console.log(`API İsteği yapılıyor: ${fullUrl}`);
+    console.log(`API İsteği yapılıyor: ${method} ${fullUrl}`);
     
     // Auth token ekle - SSR uyumlu şekilde
     if (requiresAuth) {
@@ -64,7 +85,23 @@ export async function apiRequest<T>({
           console.warn('Token bulunamadı! Yetkilendirme başarısız olabilir.');
         }
       } else {
-        console.warn('Token bulunamadı ve client-side değil!');
+        // 3. Client-side değilse (SSR/RSC), next/headers'dan cookie'yi okumayı dene
+        try {
+          const { cookies } = await import('next/headers');
+          const cookieStore = await cookies();
+          const serverToken = cookieStore.get('token')?.value;
+
+          if (serverToken) {
+            headers['Authorization'] = `Bearer ${serverToken}`;
+            console.log('Token kullanılıyor (sunucu cookie)', { tokenLength: serverToken.length });
+          } else {
+            console.warn('Sunucu tarafında token cookie bulunamadı!');
+          }
+        } catch (error) {
+            // Bu hatanın client-side'da oluşması beklenir, bu yüzden sadece loglayıp devam ediyoruz.
+            console.log('next/headers import edilemedi (muhtemelen client-side), bu beklenen bir durum olabilir.');
+            console.warn('Token bulunamadı ve client-side değil!');
+        }
       }
     }
 
@@ -82,6 +119,16 @@ export async function apiRequest<T>({
     }
 
     if (!res.ok) {
+      // Yetkilendirme hatası (401/403) durumunda kullanıcıyı login'e yönlendir
+      if ((res.status === 401 || res.status === 403) && typeof window !== 'undefined' && window.location.pathname !== '/auth/sign-in') {
+        console.error('Yetkilendirme hatası. Token temizleniyor ve giriş sayfasına yönlendiriliyor.');
+        localStorage.removeItem('token');
+        // Yönlendirme sonrası mevcut isteğin devam etmemesi için hemen yönlendir
+        window.location.href = '/auth/sign-in?session_expired=true';
+        // Bu noktadan sonra kodun devam etmemesi için bir promise döndürerek beklet
+        return new Promise(() => {}); 
+      }
+
       // Hata durumunda daha fazla bilgi almaya çalış
       let errorDetail = '';
       let errorData = null;
@@ -140,13 +187,13 @@ export async function apiRequest<T>({
     if (error instanceof Error) {
       console.error('API isteği sırasında hata:', { 
         message: error.message, 
-        url, 
+        url: actualUrl, // Hata loglamasında actualUrl kullanılıyor
         method, 
         name: error.name, 
         stack: error.stack 
       });
     } else {
-      console.error('API isteği sırasında tanımlanamayan hata:', { error, url, method });
+      console.error('API isteği sırasında tanımlanamayan hata:', { error, url: actualUrl, method }); // Hata loglamasında actualUrl kullanılıyor
     }
     throw error;
   }

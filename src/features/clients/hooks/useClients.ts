@@ -31,9 +31,14 @@ export interface ClientsResponse {
   total: number;
 }
 
-import { apiFetcher } from '@/lib/api';
+import { apiRequest } from '@/lib/api-client';
 
 export function useClients(params?: Record<string, any> & { includeDeleted?: boolean }) {
+  const fetcher = async (url: string): Promise<ClientsResponse | ClientCompany[]> => {
+    const response = await apiRequest({ url });
+    return response as ClientsResponse | ClientCompany[];
+  };
+
   // Debug log for SWR data and error
   let queryParams = { ...params };
   if (!queryParams.includeDeleted) {
@@ -43,7 +48,7 @@ export function useClients(params?: Record<string, any> & { includeDeleted?: boo
   }
   delete queryParams.includeDeleted;
   const query = Object.keys(queryParams).length > 0 ? '?' + new URLSearchParams(queryParams).toString() : '';
-  const { data, error, isLoading, mutate } = useSWR(`/api/clients${query}`, apiFetcher);
+  const { data, error, isLoading, mutate } = useSWR(`/api/clients${query}`, fetcher);
   // Hem array hem object response destekle
   const clients = Array.isArray(data) ? data : data?.data ?? [];
   const total = Array.isArray(data) ? data.length : data?.total ?? 0;

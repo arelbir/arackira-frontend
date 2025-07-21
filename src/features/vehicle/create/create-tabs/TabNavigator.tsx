@@ -12,7 +12,7 @@ import { useState, useEffect } from "react";
 import { useVehicleForm } from "./context/VehicleCreateProvider";
 import { notifySuccess, notifyError } from "./sonner-util";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { basicInfoSchema, purchaseSchema, gpsDetailsSchema, datesSchema, insuranceSchema, uttsSchema, vehicleCreateSchema } from "./schema";
+import { basicInfoSchema, purchaseSchema, gpsDetailsSchema, insuranceSchema, uttsSchema, vehicleCreateSchema, inspectionArraySchema } from "./schema";
 import { useVehicleCreate } from "../useVehicleCreate";
 import { useRouter } from "next/navigation";
 import { useInsuranceCreate } from "./useInsuranceCreate";
@@ -21,7 +21,7 @@ import { useHGSMutations } from "@/features/definitions/hgs/use-hgs";
 const tabDefs = [
   { id: "purchase", label: "Genel Bilgiler", icon: "📝", schema: purchaseSchema },
   { id: "insurance", label: "Sigorta", icon: "🛡️", schema: insuranceSchema },
-  { id: "dates", label: "Muayne", icon: "📅", schema: datesSchema },
+  { id: "inspection", label: "Muayene", icon: "📅", schema: inspectionArraySchema },
   { id: "basic", label: "HGS", icon: "💳", schema: basicInfoSchema },
   { id: "gps", label: "Uydu Takip", icon: "📡", schema: gpsDetailsSchema },
   { id: "utts", label: "UTTS", icon: "🔧", schema: uttsSchema },
@@ -109,7 +109,7 @@ export const TabNavigator: React.FC<{
     }
     setIsSaving(true);
     try {
-      const result = await createDraft({ chassis_number });
+      const result = await createDraft({ chassis_number }) as { id: number };
       setVehicleId(result.id);
       
     } catch (err) {

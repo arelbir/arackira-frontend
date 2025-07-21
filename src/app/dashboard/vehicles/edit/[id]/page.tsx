@@ -8,28 +8,38 @@ import { VehicleCreateProvider } from '@/features/vehicle/create/create-tabs/con
 import { TabNavigator } from '@/features/vehicle/create/create-tabs/TabNavigator';
 import { BasicTab } from '@/features/vehicle/create/create-tabs/tabs/BasicTab';
 import { ReviewTab } from '@/features/vehicle/create/create-tabs/tabs/ReviewTab';
-import { DatesTab } from '@/features/vehicle/create/create-tabs/tabs/DatesTab';
-import { InsuranceTab } from '@/features/vehicle/create/create-tabs/tabs/InsuranceTab';
+
+import { InsuranceTab } from '@/features/vehicle/create/create-tabs/tabs/insurance/InsuranceTab';
+import { InspectionTab } from '@/features/vehicle/create/create-tabs/tabs/inspection/InspectionTab';
 import { PurchaseTab } from '@/features/vehicle/create/create-tabs/tabs/PurchaseTab';
-import { GPSTab } from '@/features/vehicle/create/create-tabs/tabs/GPSTab';
+import { GPSTab } from '@/features/vehicle/create/create-tabs/tabs/gps/GPSTab';
 import { UttsTab } from '@/features/vehicle/create/create-tabs/tabs/UTTSTab';
 
 interface VehicleEditPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export default function VehicleEditPage({ params }: VehicleEditPageProps) {
-  // Next.js dinamik route parametrelerini async olmadan alıyoruz
+import { getVehicle } from '@/features/vehicle/services/VehicleService';
+
+export default async function VehicleEditPage({ params: paramsPromise }: VehicleEditPageProps) {
+  const params = await paramsPromise;
   const vehicleId = parseInt(params.id, 10);
-  
+
   if (isNaN(vehicleId)) {
     return notFound();
   }
-  
+
+  // Sunucu tarafında araç verilerini çek
+  const vehicleData = await getVehicle(vehicleId);
+
+  if (!vehicleData) {
+    return notFound();
+  }
+
   return (
-    <VehicleCreateProvider editMode={true} vehicleToEdit={vehicleId}>
+    <VehicleCreateProvider editMode={true} vehicleToEdit={vehicleData}>
       <div className="p-8 space-y-6">
         <div className="flex items-center gap-2">
           <Button asChild variant="ghost" size="icon" aria-label="Geri dön">
@@ -37,14 +47,15 @@ export default function VehicleEditPage({ params }: VehicleEditPageProps) {
               <ArrowLeftIcon />
             </Link>
           </Button>
-          <h1 className="text-lg font-semibold">Araç Düzenle (ID: {vehicleId})</h1>
+          <h1 className="text-lg font-semibold">Araç Düzenle: {vehicleData.plate}</h1>
         </div>
 
         <TabNavigator>    
           <BasicTab />
           <GPSTab />
           <PurchaseTab />
-          <DatesTab />
+
+          <InspectionTab />
           <InsuranceTab />
           <UttsTab />
           <ReviewTab />
