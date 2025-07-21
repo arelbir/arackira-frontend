@@ -11,6 +11,7 @@ interface FormSwitchFieldProps<T extends FieldValues> {
   label: string;
   className?: string;
   labelPlacement?: 'left' | 'right';
+  disabled?: boolean;
 }
 
 export function FormSwitchField<T extends FieldValues>({ 
@@ -18,7 +19,8 @@ export function FormSwitchField<T extends FieldValues>({
   name, 
   label, 
   className,
-  labelPlacement = 'right'
+  labelPlacement = 'right',
+  disabled
 }: FormSwitchFieldProps<T>) {
   return (
     <Controller
@@ -34,6 +36,7 @@ export function FormSwitchField<T extends FieldValues>({
                 id={name}
                 checked={field.value}
                 onCheckedChange={field.onChange}
+                disabled={disabled}
               />
               <Label htmlFor={name}>{label}</Label>
             </>
@@ -44,6 +47,7 @@ export function FormSwitchField<T extends FieldValues>({
                 id={name}
                 checked={field.value}
                 onCheckedChange={field.onChange}
+                disabled={disabled}
               />
             </>
           )}

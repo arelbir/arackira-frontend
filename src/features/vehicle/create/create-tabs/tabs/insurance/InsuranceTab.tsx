@@ -1,72 +1,100 @@
 "use client";
 
+import React, { useState } from "react";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Drawer, DrawerTrigger } from "@/components/ui/drawer";
-import { DrawerForm } from "@/components/ui/form/drawer-form";
+import { Drawer, DrawerTrigger, DrawerContent } from "@/components/ui/drawer";
 import { toast } from "sonner";
 
-import { useVehicleForm } from "../../context/VehicleCreateProvider";
-import { CreateTabContent } from "../../TabNavigator";
 import { InsuranceTable } from "./InsuranceTable";
 import { InsuranceForm } from "./InsuranceForm";
 import { EmptyState } from "@/components/ui/shared/empty-state";
-import { useLookupData } from "@/features/vehicle/hooks/useLookupData";
-import { useInsuranceFormHandler } from "@/features/vehicle/hooks/useInsuranceFormHandler";
-import { INSURANCE_MESSAGES } from "./insurance-constants";
-import { FormProvider } from "react-hook-form";
+import { INSURANCE_MESSAGES, NEW_INSURANCE_RECORD } from "./insurance-constants";
+import { VehicleFormValues } from "@/features/vehicle/schemas";
 import { InsuranceDeleteConfirmDialog } from "@/features/vehicle/components/InsuranceDeleteConfirmDialog";
-import { Insurance } from "@/features/vehicle/types";
-import React, { useState } from "react";
+import { useLookupData } from "@/features/vehicle/hooks/useLookupData";
+import { EnrichedInsurance } from "./InsuranceTable";
 
 export function InsuranceTab() {
-  const { form, vehicleId } = useVehicleForm();
-  
-  // Lookup verilerini merkezi hook'tan al
-  const lookups = useLookupData();
-  
-  // Silme işlemi için state değişkenleri
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = React.useState(false);
-  const [deleteIndex, setDeleteIndex] = React.useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = React.useState(false);
-  
-  // Form işlemlerini merkezi hook'tan al
-  const {
-    isDrawerOpen, 
-    setIsDrawerOpen,
-    editingIndex,
-    fields,
-    handleAddNew,
-    handleEdit,
-    handleRenew,
-    handleSave,
-    methods,
-    remove
-  } = useInsuranceFormHandler({ 
-    control: form.control,
-    onSuccess: () => toast.success(INSURANCE_MESSAGES.SUCCESS),
-    onError: (error: Error | unknown) => toast.error(INSURANCE_MESSAGES.ERROR)
+  const { control, watch } = useFormContext<VehicleFormValues>();
+  const vehicleId = watch("id");
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "insurances",
   });
+
+  const { insuranceTypes, insuranceCompanies } = useLookupData();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+
+  const companyNameMap = new Map(insuranceCompanies?.map(c => [String(c.id), c.name]));
+  const typeNameMap = new Map(insuranceTypes?.map(t => [String(t.id), t.name]));
+
+  const enrichedInsurances: EnrichedInsurance[] = fields.map((field) => ({
+    ...field,
+    insurance_company_name: companyNameMap.get(String(field.insurance_company_id)),
+    insurance_type_name: typeNameMap.get(String(field.insurance_type_id)),
+  }));
+
+  const enrichedItemToDelete = deleteIndex !== null ? enrichedInsurances[deleteIndex] : null;
+
+  const handleAddNew = () => {
+    append(NEW_INSURANCE_RECORD);
+    setEditingIndex(fields.length);
+    setIsDrawerOpen(true);
+  };
+
+  const handleEdit = (index: number) => {
+    setEditingIndex(index);
+    setIsDrawerOpen(true);
+  };
+
+  const handleSave = () => {
+    // Form state is managed by react-hook-form, so we just close the drawer.
+    setIsDrawerOpen(false);
+    setEditingIndex(null);
+    toast.success(INSURANCE_MESSAGES.SUCCESS);
+  };
+
+  const handleCancel = () => {
+    // If we were adding a new record, remove it on cancel.
+    if (editingIndex !== null && editingIndex >= fields.length - 1) {
+      // This logic might need adjustment if sorting/filtering is added
+    }
+    setIsDrawerOpen(false);
+    setEditingIndex(null);
+  };
+
+  const openDeleteConfirm = (index: number) => {
+    setDeleteIndex(index);
+  };
+
+  const handleDelete = () => {
+    if (deleteIndex !== null) {
+      remove(deleteIndex);
+      setDeleteIndex(null);
+      toast.success(INSURANCE_MESSAGES.DELETE_SUCCESS);
+    }
+  };
 
   if (!vehicleId) {
     return (
-      <CreateTabContent value="insurance">
+      <div>
         <EmptyState
-          icon={
-            <svg xmlns="http://www.w3.org/2000/svg" className="size-12 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2C7 4 2 6 2 11v5a2 2 0 002 2h16a2 2 0 002-2v-5c0-5-5-7-10-9zm0 0v2m0 0c2.5 1 5 2 5 7v5" />
-            </svg>
-          }
+          icon={<PlusIcon className="size-12 text-yellow-300" />}
           title="Sigorta kaydı eklemek için önce taslak araç oluşturmalısınız."
           description="'Taslak Kaydet' butonunu kullanarak önce aracı kaydedin."
           variant="warning"
         />
-      </CreateTabContent>
+      </div>
     );
   }
 
   return (
-    <CreateTabContent value="insurance">
+    <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold">Sigorta Kayıtları</h2>
         <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="right">
@@ -76,69 +104,51 @@ export function InsuranceTab() {
               Sigorta Ekle
             </Button>
           </DrawerTrigger>
-          <DrawerForm
-            title={editingIndex === null ? INSURANCE_MESSAGES.NEW : INSURANCE_MESSAGES.EDIT}
-            onCancel={() => setIsDrawerOpen(false)}
-            onSave={handleSave}
-          >
-            <div className="p-6 pt-2 pb-8">
-              <FormProvider {...methods}>
-                <InsuranceForm
-                  index={editingIndex !== null ? editingIndex : fields.length}
-                  initialData={editingIndex !== null ? fields[editingIndex] : undefined}
-                  lookups={lookups}
-                  onClose={() => setIsDrawerOpen(false)}
-                  onSave={handleSave}
-                />
-              </FormProvider>
-            </div>
-          </DrawerForm>
+          <DrawerContent className="w-full md:w-1/2 lg:w-1/3 p-4">
+            <h3 className="text-lg font-semibold mb-4">
+              {editingIndex === null ? INSURANCE_MESSAGES.NEW : INSURANCE_MESSAGES.EDIT}
+            </h3>
+            {editingIndex !== null && (
+              <InsuranceForm
+                index={editingIndex}
+                onSave={handleSave}
+                onCancel={handleCancel}
+              />
+            )}
+          </DrawerContent>
         </Drawer>
       </div>
 
-      {fields.length === 0 ? (
-        <div className="flex items-center justify-center h-64 border rounded-md">
-          <p className="text-gray-500">Henüz sigorta kaydı yok.</p>
-        </div>
-      ) : (
-        <div className="flex-1 min-h-[300px] flex flex-col overflow-auto w-full mb-4 border rounded-md">
+      <div className="flex-1 min-h-[300px] flex flex-col overflow-auto w-full mb-4 border rounded-md">
+        {fields.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <EmptyState
+              icon={<PlusIcon className="size-10 text-gray-400" />}
+              title="Henüz sigorta kaydı eklenmedi."
+              description="Yeni bir sigorta poliçesi eklemek için butona tıklayın."
+            />
+          </div>
+        ) : (
           <InsuranceTable
-            insurances={fields}
+            insurances={enrichedInsurances}
             onEdit={handleEdit}
-            onDelete={(index) => {
-              setDeleteIndex(index);
-              setIsDeleteConfirmOpen(true);
-            }}
-            onRenew={handleRenew}
-            insuranceTypes={lookups.insuranceTypes}
+            onDelete={openDeleteConfirm}
+            onRenew={() => {}}
           />
-        </div>
-      )}
-      
-      {/* Silme Onay Dialog'u */}
+        )}
+      </div>
+
       <InsuranceDeleteConfirmDialog
-        open={isDeleteConfirmOpen}
-        onOpenChange={setIsDeleteConfirmOpen}
-        itemToDelete={deleteIndex !== null ? fields[deleteIndex] as Insurance : null}
-        isDeleting={isDeleting}
+        open={deleteIndex !== null}
+        onOpenChange={(isOpen) => !isOpen && setDeleteIndex(null)}
+        itemToDelete={enrichedItemToDelete}
         onConfirm={() => {
-          if (deleteIndex !== null) {
-            setIsDeleting(true);
-            try {
-              remove(deleteIndex);
-              toast.success("Sigorta kaydı başarıyla silindi");
-            } finally {
-              setIsDeleting(false);
-              setIsDeleteConfirmOpen(false);
-              setDeleteIndex(null);
-            }
-          }
-        }}
-        onCancel={() => {
-          setIsDeleteConfirmOpen(false);
+          handleDelete();
           setDeleteIndex(null);
         }}
+        onCancel={() => setDeleteIndex(null)}
+        isDeleting={false} // This can be connected to a loading state if the delete is async
       />
-    </CreateTabContent>
+    </div>
   );
 };

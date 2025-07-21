@@ -48,7 +48,7 @@ export interface InspectionStatus {
   label: string;
 }
 
-export const getInspectionStatus = (expiryDate: string): InspectionStatus => {
+export const getInspectionStatus = (expiryDate: string | undefined): InspectionStatus => {
   if (!expiryDate) return { status: "inactive", label: "Belirsiz" };
 
   const today = new Date();
@@ -64,4 +64,14 @@ export const getInspectionStatus = (expiryDate: string): InspectionStatus => {
   } else {
     return { status: "active", label: "Geçerli" };
   }
+};
+
+// Default values for a new inspection record
+export const INSPECTION_DEFAULT_VALUES = {
+  [INSPECTION_FIELDS.INSPECTION_DATE]: undefined,
+  [INSPECTION_FIELDS.EXPIRY_DATE]: undefined,
+  [INSPECTION_FIELDS.INSPECTION_COMPANY_ID]: undefined,
+  [INSPECTION_FIELDS.RESULT]: "",
+  [INSPECTION_FIELDS.COST]: 0,
+  [INSPECTION_FIELDS.DESCRIPTION]: "",
 };

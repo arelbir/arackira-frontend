@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNotification } from "@/components/ui/notification";
-import { transformAPIResponse, TransformedAPIResponse } from "../utils/data-transformers";
+import { VehicleFormValues } from "../schemas";
+import { parseApiDataToFormValues } from "../utils/data-transformers";
 import { apiRequest } from "@/lib/api-client";
 
 // API'den gelen ham yanıtın yapısını tanımlar
@@ -12,11 +13,10 @@ interface VehicleCompleteApiResponse {
 // Bu interface, hook'umuzun alacağı props'ları tanımlar.
 // State'i yukarıya, yani parent bileşene taşımak için callback'ler alır.
 interface UseVehicleEditProps {
-  editMode: boolean;
+
   vehicleId?: number | object | null;
   setVehicleId: (id: number | null) => void;
-  onRelatedModulesFetched: (data: any) => void;
-  onFetchSuccess: (data: TransformedAPIResponse) => void; // Çekilen veriyi yukarıya iletmek için callback
+  onFetchSuccess: (data: Partial<VehicleFormValues>) => void; // Çekilen veriyi yukarıya iletmek için callback
 }
 
 // Hook sadece yüklenme ve hata durumlarını döndürecek.
@@ -31,9 +31,8 @@ interface UseVehicleEditResult {
  * Çekilen veriyi kendi içinde tutmaz, çağıran bileşene yukarı taşır.
  */
 export const useVehicleEdit = ({
-  editMode,
+
   vehicleId: vehicleIdProp,
-  onRelatedModulesFetched,
   onFetchSuccess,
 }: UseVehicleEditProps): UseVehicleEditResult => {
   // Prop olarak gelen vehicleId'yi gereksiz render'lardan kaçınmak için kontrol et.
@@ -54,9 +53,8 @@ export const useVehicleEdit = ({
         throw new Error('API yanıtı geçersiz veya boş.');
       }
 
-      const allData = transformAPIResponse(response);
+      const allData = parseApiDataToFormValues(response);
       onFetchSuccess(allData); // Ana veriyi Provider'a iletiyoruz.
-      onRelatedModulesFetched(allData.included); // İlişkili modülleri Provider'a iletiyoruz.
 
       success("Araç verileri başarıyla yüklendi.");
       return allData;
@@ -68,7 +66,7 @@ export const useVehicleEdit = ({
     } finally {
       setIsLoading(false);
     }
-  }, [onFetchSuccess, onRelatedModulesFetched, showError, success]);
+  }, [onFetchSuccess, showError, success]);
 
   useEffect(() => {
     // Sadece vehicleId varsa ve daha önce veri çekilmemişse işlemi başlat.

@@ -72,7 +72,6 @@ export const useVehicleImportService = () => {
       downloadFileFromResponse(blob, filename);
       return true;
     } catch (error) {
-      console.error('Şablon indirme hatası:', error);
       throw error;
     }
   };
@@ -120,7 +119,7 @@ export const useVehicleImportService = () => {
       
       return result;
     } catch (error) {
-      console.error('İçe aktarma hatası:', error);
+
       throw error;
     }
   };

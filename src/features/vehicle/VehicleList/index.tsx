@@ -11,7 +11,6 @@ import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/ui/table/data-table';
 import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
 import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
-import { DataTableViewOptions } from '@/components/ui/table/data-table-view-options';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Edit, Eye, FilterX } from 'lucide-react';
 import Link from 'next/link';

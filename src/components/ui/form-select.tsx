@@ -2,79 +2,45 @@
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { SearchableSelect } from "@/components/ui/searchable-select";
-import { Control, FieldPath, FieldValues } from "react-hook-form";
+import type { Control, FieldPath, FieldValues } from "react-hook-form";
 
-import { Skeleton } from '@/components/ui/skeleton';
-
-interface FormSelectProps {
+interface FormSelectFieldProps<TForm extends FieldValues> {
+  control: Control<TForm>;
+  name: FieldPath<TForm>;
+  label: string;
   options: { value: string; label: string }[];
-  value?: string;
-  onChange: (val: string) => void;
-  onBlur?: () => void;
   placeholder?: string;
-  loading?: boolean;
+  required?: boolean;
   disabled?: boolean;
-  skeletonProps?: React.ComponentProps<'div'>;
-  id?: string;
 }
 
-export function FormSelect({
+export function FormSelectField<TForm extends FieldValues>({
+  control,
+  name,
+  label,
   options,
-  value,
-  onChange,
-  onBlur,
   placeholder,
-  loading,
-  skeletonProps,
+  required,
   disabled,
-  id,
-}: FormSelectProps) {
-  return loading ? (
-    <Skeleton className="h-10 w-full mb-2" {...skeletonProps} />
-  ) : (
-    <SearchableSelect
-      id={id}
-      options={options}
-      value={value !== undefined ? String(value) : undefined}
-      placeholder={placeholder}
-      onChange={val => {
-        console.log('[FormSelect] onChange:', val);
-        onChange(val);
-      }}
-      disabled={disabled}
-    />
-  );
-}
-
-export function FormSelectField({ control, name, label, options, loading, error, placeholder, disabled, helperText, value, onChange, isIdField = false }: any) {
+}: FormSelectFieldProps<TForm>) {
   return (
     <FormField
       control={control}
       name={name}
-      render={({ field }: any) => (
+      rules={{ required }}
+      render={({ field }) => (
         <FormItem>
-          <FormLabel htmlFor={field.id}>{label}</FormLabel>
+          <FormLabel>{label}{required && " *"}</FormLabel>
           <FormControl>
-            <FormSelect
-              {...field}
-              id={field.id}
-              value={typeof value !== 'undefined' ? value : (field.value !== undefined && field.value !== null ? String(field.value) : '')}
-              onChange={(val) => {
-                if (typeof onChange === 'function') {
-                  onChange(val);
-                } else {
-                  field.onChange(val);
-                }
-              }}
+            <SearchableSelect
               options={options}
-              loading={loading}
-              disabled={disabled}
+              value={field.value ? String(field.value) : undefined}
+              onChange={(value) => field.onChange(value ? Number(value) : null)}
               placeholder={placeholder}
+              disabled={disabled}
             />
           </FormControl>
           <FormMessage />
-          {error && <p className="text-xs text-red-500 mt-1">{String(error)}</p>}
-          {disabled && helperText && <p className="text-xs text-muted-foreground mt-1">{helperText}</p>}
         </FormItem>
       )}
     />

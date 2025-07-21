@@ -50,7 +50,9 @@ export function getFilterOperators(filterVariant: FilterVariant) {
     dateRange: dataTableConfig.dateOperators,
     boolean: dataTableConfig.booleanOperators,
     select: dataTableConfig.selectOperators,
-    multiSelect: dataTableConfig.multiSelectOperators
+    multiSelect: dataTableConfig.multiSelectOperators,
+    slider: dataTableConfig.numericOperators, // Added missing slider operators
+    faceted: dataTableConfig.selectOperators, // Added missing faceted operators
   };
 
   return operatorMap[filterVariant] ?? dataTableConfig.textOperators;

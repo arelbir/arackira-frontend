@@ -3,7 +3,10 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Insurance } from '../types';
+import { z } from 'zod';
+import { insuranceSchema } from '../schemas/included.schemas';
+
+type Insurance = z.infer<typeof insuranceSchema>;
 
 interface InsuranceDeleteConfirmDialogProps {
   open: boolean;
@@ -26,13 +29,13 @@ export function InsuranceDeleteConfirmDialog({
   onCancel,
 }: InsuranceDeleteConfirmDialogProps) {
   // Tarih formatını daha okunabilir hale getirme
-  const formatDate = (dateString?: string | null) => {
-    if (!dateString) return '';
+  const formatDate = (date?: Date | string | null) => {
+    if (!date) return '';
     try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('tr-TR');
+      const d = typeof date === 'string' ? new Date(date) : date;
+      return d.toLocaleDateString('tr-TR');
     } catch (e) {
-      return dateString;
+      return String(date);
     }
   };
 
@@ -40,7 +43,7 @@ export function InsuranceDeleteConfirmDialog({
   const getItemLabel = () => {
     if (!itemToDelete) return '';
     
-    const insuranceTypeName = itemToDelete.insurance_type?.name || '';
+    const insuranceTypeName = 'Sigorta'; // Note: The schema doesn't include the nested insurance_type object with name.
     const startDate = formatDate(itemToDelete.start_date);
     
     return `${insuranceTypeName} (${startDate})`;

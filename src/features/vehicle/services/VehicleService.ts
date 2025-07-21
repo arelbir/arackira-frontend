@@ -3,9 +3,8 @@
  */
 import { apiRequest } from '@/lib/api-client';
 import { ApiResponse } from '../types/vehicle-form-context.types';
-import { VehicleCreateValues } from '@/features/vehicle/create/create-tabs/schema';
-import { convertEmptyDatesToNull, convertStringIdsToNumbers } from '../utils/form-helpers';
-
+import { transformFormToAPI } from '../utils/data-transformers';
+import { VehicleFormValues } from '../schemas';
 
 /**
  * Araç verileri için API servisi
@@ -22,7 +21,7 @@ export const getVehicle = async (id: number) => {
     // API yanıtından sadece 'data' kısmını (ana araç verileri) döndür
     return response.data;
   } catch (error) {
-    console.error(`Error fetching vehicle with ID ${id}:`, error);
+
     // Hata durumunda null döndürerek sayfanın çökmesini engelle
     return null;
   }
@@ -44,7 +43,7 @@ export class VehicleService {
       
       return response;
     } catch (error) {
-      console.error('fetchVehicleWithRelated error:', error);
+
       throw error;
     }
   }
@@ -58,86 +57,14 @@ export class VehicleService {
    * @returns API yanıtı
    */
   static async submitWithRelated(
-    vehicleData: VehicleCreateValues, 
-    relatedData: {
-      insurances: any[],
-      inspections: any[],
-      utts: any[],
-      hgs: any[],
-      services: any[]
-    },
+    formData: VehicleFormValues,
     editMode: boolean = false,
     vehicleId?: number
   ): Promise<ApiResponse> {
     try {
-      // DEBUG: Veri dönüşümü öncesi formdan gelen ID değerlerini görüntüle
-      console.log('Form submit değerleri (dönüşüm öncesi):', {
-        brand_id: vehicleData.brand_id,
-        model_id: vehicleData.model_id,
-        vehicle_type_id: vehicleData.vehicle_type_id,
-        fuel_type_id: vehicleData.fuel_type_id,
-        color_id: vehicleData.color_id,
-        branch_id: vehicleData.branch_id,
-        vehicle_status_id: vehicleData.vehicle_status_id,
-        supplier_id: vehicleData.supplier_id,
-        transmission_id: vehicleData.transmission_id,
-        tipKontrol: {
-          brand_id_type: typeof vehicleData.brand_id,
-          model_id_type: typeof vehicleData.model_id,
-          vehicle_type_id_type: typeof vehicleData.vehicle_type_id,
-          supplier_id_type: typeof vehicleData.supplier_id
-        }
-      });
-      
-      // Veri dönüşümleri - boş tarih alanları ve string ID'leri işle
-      let processedVehicleData = convertEmptyDatesToNull(vehicleData);
-      
-      // DEBUG: tarih dönüşümü sonrası
-      console.log('convertEmptyDatesToNull sonrası:', {
-        brand_id: processedVehicleData.brand_id,
-        model_id: processedVehicleData.model_id,
-        vehicle_type_id: processedVehicleData.vehicle_type_id,
-        fuel_type_id: processedVehicleData.fuel_type_id,
-        tipKontrol: {
-          brand_id_type: typeof processedVehicleData.brand_id,
-          model_id_type: typeof processedVehicleData.model_id,
-          vehicle_type_id_type: typeof processedVehicleData.vehicle_type_id
-        }
-      });
-      
-      // ID alanlarını string'den number'a dönüştür
-      processedVehicleData = convertStringIdsToNumbers(processedVehicleData);
-      
-      // DEBUG: ID dönüşümü sonrası
-      console.log('convertStringIdsToNumbers sonrası:', {
-        brand_id: processedVehicleData.brand_id,
-        model_id: processedVehicleData.model_id,
-        vehicle_type_id: processedVehicleData.vehicle_type_id,
-        fuel_type_id: processedVehicleData.fuel_type_id,
-        color_id: processedVehicleData.color_id,
-        branch_id: processedVehicleData.branch_id,
-        vehicle_status_id: processedVehicleData.vehicle_status_id,
-        supplier_id: processedVehicleData.supplier_id,
-        transmission_id: processedVehicleData.transmission_id,
-        tipKontrol: {
-          brand_id_type: typeof processedVehicleData.brand_id,
-          model_id_type: typeof processedVehicleData.model_id,
-          vehicle_type_id_type: typeof processedVehicleData.vehicle_type_id,
-          supplier_id_type: typeof processedVehicleData.supplier_id
-        }
-      });
-      
-      const { insurances, inspections, utts, hgs, services } = relatedData;
-      
-      // Tüm verileri birleştir ve ID alanlarını dönüştür
-      const payload = {
-        vehicle: processedVehicleData,
-        insurances: insurances.map(insurance => convertStringIdsToNumbers(convertEmptyDatesToNull(insurance))),
-        inspections: inspections.map(inspection => convertStringIdsToNumbers(convertEmptyDatesToNull(inspection))),
-        utts: utts.map(utt => convertStringIdsToNumbers(convertEmptyDatesToNull(utt))),
-        hgs: hgs.map(hgsItem => convertStringIdsToNumbers(convertEmptyDatesToNull(hgsItem))),
-        services: services.map(service => convertStringIdsToNumbers(convertEmptyDatesToNull(service)))
-      };
+      // Tüm form verisini tek bir fonksiyonla API'nin beklediği formata dönüştür.
+      // Bu fonksiyon tarihleri ISO string'e çevirir ve payload'ı doğru yapılandırır.
+      const finalPayload = transformFormToAPI(formData);
 
       // API endpoint'i belirleme
       const url = editMode && vehicleId 
@@ -148,13 +75,13 @@ export class VehicleService {
       const response = await apiRequest({
         url,
         method: editMode ? 'PUT' : 'POST',
-        body: payload,
+        body: finalPayload,
         requiresAuth: true
       }) as ApiResponse;
       
       return response;
     } catch (error) {
-      console.error('submitWithRelated error:', error);
+
       throw error;
     }
   }

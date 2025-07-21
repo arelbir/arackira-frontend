@@ -7,10 +7,10 @@ import {
   getPaginationRowModel,
   useReactTable
 } from '@tanstack/react-table';
-import { Vehicle } from '../types';
+import { VehicleFormValues } from '../schemas';
 import { formatDateTR, safeAccess } from '@/lib/utils';
 
-export type StrictVehicle = Vehicle & {
+export type StrictVehicle = VehicleFormValues & {
   brand?: { name: string } | null;
   model?: { name: string } | null;
   color?: { name: string } | null;
@@ -67,20 +67,20 @@ export const useVehicleTable = (vehicles: StrictVehicle[]): UseVehicleTableResul
       { header: 'Yakıt Tipi', accessorFn: row => safeAccess(row, ['fuel_type', 'name'], '-'), meta: { label: 'Yakıt Tipi', variant: 'text' } },
       { accessorKey: 'engine_power_hp', header: 'Motor Gücü (HP)', meta: { label: 'Motor Gücü', variant: 'number', unit: 'hp' }, cell: ({ row }) => safeAccess(row.original, ['engine_power_hp'], '-') },
       { accessorKey: 'engine_volume_cc', header: 'Motor Hacmi (cc)', meta: { label: 'Motor Hacmi', variant: 'number', unit: 'cc' }, cell: ({ row }) => safeAccess(row.original, ['engine_volume_cc'], '-') },
-      { accessorKey: 'engine_number', header: 'Motor No', meta: { label: 'Motor No', variant: 'text' }, cell: ({ getValue, row }) => safeAccess(row.original, ['engine_number'], '-') },
+      { accessorKey: 'engine_number', header: 'Motor No', meta: { label: 'Motor No', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['engine_number'], '-') },
       { accessorKey: 'first_registration_date', header: 'İlk Tescil', meta: { label: 'İlk Tescil', variant: 'date' }, cell: ({ getValue }) => formatDateTR(getValue()) },
-      { accessorKey: 'registration_document_number', header: 'Ruhsat No', meta: { label: 'Ruhsat No', variant: 'text' }, cell: ({ getValue, row }) => safeAccess(row.original, ['registration_document_number'], '-') },
-      { accessorKey: 'package', header: 'Paket', meta: { label: 'Paket', variant: 'text' }, cell: ({ getValue, row }) => safeAccess(row.original, ['package'], '-') },
-      { accessorKey: 'version', header: 'Versiyon', meta: { label: 'Versiyon', variant: 'text' }, cell: ({ getValue, row }) => safeAccess(row.original, ['version'], '-') },
-      { accessorKey: 'vehicle_group_id', header: 'Araç Grubu', meta: { label: 'Araç Grubu', variant: 'number' }, cell: ({ getValue, row }) => safeAccess(row.original, ['vehicle_group_id'], '-') },
-      { accessorKey: 'body_type', header: 'Kasa Tipi', meta: { label: 'Kasa Tipi', variant: 'text' }, cell: ({ getValue, row }) => safeAccess(row.original, ['body_type'], '-') },
-      { accessorKey: 'transmission_id', header: 'Vites Tipi', meta: { label: 'Vites Tipi', variant: 'number' }, cell: ({ getValue, row }) => safeAccess(row.original, ['transmission_id'], '-') },
+      { accessorKey: 'registration_document_number', header: 'Ruhsat No', meta: { label: 'Ruhsat No', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['registration_document_number'], '-') },
+      { accessorKey: 'package', header: 'Paket', meta: { label: 'Paket', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['package'], '-') },
+      { accessorKey: 'version', header: 'Versiyon', meta: { label: 'Versiyon', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['version'], '-') },
+      { accessorKey: 'vehicle_group_id', header: 'Araç Grubu', meta: { label: 'Araç Grubu', variant: 'number' }, cell: ({ row }) => safeAccess(row.original, ['vehicle_group_id'], '-') },
+      { accessorKey: 'body_type', header: 'Kasa Tipi', meta: { label: 'Kasa Tipi', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['body_type'], '-') },
+      { accessorKey: 'transmission_id', header: 'Vites Tipi', meta: { label: 'Vites Tipi', variant: 'number' }, cell: ({ row }) => safeAccess(row.original, ['transmission_id'], '-') },
       { header: 'Vites Tipi Adı', accessorFn: row => safeAccess(row, ['transmission', 'name'], '-'), meta: { label: 'Vites Tipi Adı', variant: 'text' } },
-      { accessorKey: 'next_maintenance_date', header: 'Bakım Tarihi', meta: { label: 'Bakım Tarihi', variant: 'date' }, cell: ({ getValue, row }) => formatDateTR(safeAccess(row.original, ['next_maintenance_date'], null)) },
-      { accessorKey: 'inspection_expiry_date', header: 'Muayene Bitiş', meta: { label: 'Muayene Bitiş', variant: 'date' }, cell: ({ getValue, row }) => formatDateTR(safeAccess(row.original, ['inspection_expiry_date'], null)) },
-      { accessorKey: 'insurance_expiry_date', header: 'Trafik Sig. Bitiş', meta: { label: 'Trafik Sig. Bitiş', variant: 'date' }, cell: ({ getValue, row }) => formatDateTR(safeAccess(row.original, ['insurance_expiry_date'], null)) },
-      { accessorKey: 'casco_expiry_date', header: 'Kasko Bitiş', meta: { label: 'Kasko Bitiş', variant: 'date' }, cell: ({ getValue, row }) => formatDateTR(safeAccess(row.original, ['casco_expiry_date'], null)) },
-      { accessorKey: 'exhaust_stamp_expiry_date', header: 'Egzoz Pul Bitiş', meta: { label: 'Egzoz Pul Bitiş', variant: 'date' }, cell: ({ getValue, row }) => formatDateTR(safeAccess(row.original, ['exhaust_stamp_expiry_date'], null)) },
+      { accessorKey: 'next_maintenance_date', header: 'Bakım Tarihi', meta: { label: 'Bakım Tarihi', variant: 'date' }, cell: ({ row }) => formatDateTR(safeAccess(row.original, ['next_maintenance_date'], null)) },
+      { accessorKey: 'inspection_expiry_date', header: 'Muayene Bitiş', meta: { label: 'Muayene Bitiş', variant: 'date' }, cell: ({ row }) => formatDateTR(safeAccess(row.original, ['inspection_expiry_date'], null)) },
+      { accessorKey: 'insurance_expiry_date', header: 'Trafik Sig. Bitiş', meta: { label: 'Trafik Sig. Bitiş', variant: 'date' }, cell: ({ row }) => formatDateTR(safeAccess(row.original, ['insurance_expiry_date'], null)) },
+      { accessorKey: 'casco_expiry_date', header: 'Kasko Bitiş', meta: { label: 'Kasko Bitiş', variant: 'date' }, cell: ({ row }) => formatDateTR(safeAccess(row.original, ['casco_expiry_date'], null)) },
+      { accessorKey: 'exhaust_stamp_expiry_date', header: 'Egzoz Pul Bitiş', meta: { label: 'Egzoz Pul Bitiş', variant: 'date' }, cell: ({ row }) => formatDateTR(safeAccess(row.original, ['exhaust_stamp_expiry_date'], null)) },
       { accessorKey: 'tsb_code', header: 'Tsb Kodu', meta: { label: 'Tsb Kodu', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['tsb_code'], '-') },
       { accessorKey: 'is_draft', header: 'Taslak', meta: { label: 'Taslak', variant: 'boolean' }, cell: ({ row }) => safeAccess(row.original, ['is_draft'], '-') },
     ],

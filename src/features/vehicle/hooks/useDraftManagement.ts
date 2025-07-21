@@ -5,22 +5,21 @@
 import { useState, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { DRAFT_KEY } from "../utils/storage-constants";
-import { VehicleCreateValues } from "../../vehicle/create/create-tabs/schema";
-import { TransformedIncludedData } from "../utils/data-transformers"; // Yeni import
+import { VehicleFormValues } from "../schemas";
+import { useNotification } from "@/components/ui/notification";
 
 interface UseDraftManagementProps {
-  form: UseFormReturn<VehicleCreateValues>;
+  form: UseFormReturn<VehicleFormValues>;
   editMode: boolean;
 }
 
 interface UseDraftManagementResult {
-  draft: (Partial<VehicleCreateValues> & { included?: TransformedIncludedData }) | null;
+  draft: Partial<VehicleFormValues> | null;
   showDraftDialog: boolean;
   setShowDraftDialog: (show: boolean) => void;
   useDraft: boolean | null;
   setUseDraft: (use: boolean | null) => void;
-  // saveDraft, ana form verileriyle birlikte ilişkili modül verilerini de kabul edecek şekilde güncellendi
-  saveDraft: (formData: Partial<VehicleCreateValues> & { included?: TransformedIncludedData }) => void;
+  saveDraft: (formData: Partial<VehicleFormValues>) => void;
   clearDraft: () => void;
 }
 
@@ -33,15 +32,13 @@ export const useDraftManagement = ({
   form,
   editMode
 }: UseDraftManagementProps): UseDraftManagementResult => {
-  const [mounted, setMounted] = useState(false);
-  const [draft, setDraft] = useState<(Partial<VehicleCreateValues> & { included?: TransformedIncludedData }) | null>(null);
+  const [draft, setDraft] = useState<Partial<VehicleFormValues> | null>(null);
   const [showDraftDialog, setShowDraftDialog] = useState(false);
   const [useDraft, setUseDraft] = useState<boolean | null>(null);
+  const { error: showError } = useNotification();
 
   // İlk yüklenme ve taslak kontrolü
   useEffect(() => {
-    setMounted(true);
-    
     // Düzenleme modunda taslak kullanılmaz
     if (editMode) return;
     
@@ -53,11 +50,11 @@ export const useDraftManagement = ({
         setDraft(parsedDraft);
         setShowDraftDialog(true);
       } catch (err) {
-        console.error("Taslak ayrıştırma hatası:", err);
+        showError("Kaylıtlı taslak verisi bozuk olduğu için yüklenemedi.");
         localStorage.removeItem(DRAFT_KEY);
       }
     }
-  }, [editMode]);
+  }, [editMode, showError]);
 
   // Taslak kullanma kararı verilirse
   useEffect(() => {
@@ -72,7 +69,7 @@ export const useDraftManagement = ({
    * Formun mevcut durumunu taslak olarak kaydet
    * @param formData - Form verileri (ana form ve opsiyonel olarak ilişkili modüller)
    */
-  const saveDraft = (formData: Partial<VehicleCreateValues> & { included?: TransformedIncludedData }) => {
+  const saveDraft = (formData: Partial<VehicleFormValues>) => {
     if (!editMode) {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
     }

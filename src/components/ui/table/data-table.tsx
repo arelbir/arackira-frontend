@@ -20,7 +20,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeader,
   TableRow
 } from '@/components/ui/table';
@@ -31,12 +30,14 @@ import { DataTableDraggableHeader } from './data-table-draggable-header';
 interface DataTableProps<TData> extends React.ComponentProps<'div'> {
   table: TanstackTable<TData>;
   actionBar?: React.ReactNode;
+  getRowProps?: (row: any) => React.HTMLAttributes<HTMLTableRowElement>;
 }
 
 export function DataTable<TData>({
   table,
   actionBar,
-  children
+  children,
+  getRowProps
 }: DataTableProps<TData>) {
   // Sürükle-bırak sensörleri tanımlama
   const sensors = useSensors(
@@ -64,8 +65,7 @@ export function DataTable<TData>({
     }
   };
   
-  // Tüm sütun kimliklerini hazırla
-  const columnIds = table.getAllLeafColumns().map(column => column.id);
+
 
   return (
     <div className='flex flex-1 flex-col space-y-4'>
@@ -104,6 +104,7 @@ export function DataTable<TData>({
                       <TableRow
                         key={row.id}
                         data-state={row.getIsSelected() && 'selected'}
+                        {...(getRowProps ? getRowProps(row) : {})}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell

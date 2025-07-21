@@ -2,7 +2,7 @@
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Control, FieldPath, FieldValues } from "react-hook-form";
+import type { Control, FieldPath, FieldValues } from "react-hook-form";
 
 interface FormInputProps<TForm extends FieldValues> {
   control: Control<TForm>;
@@ -12,6 +12,7 @@ interface FormInputProps<TForm extends FieldValues> {
   placeholder?: string;
   required?: boolean;
   step?: string | number;
+  disabled?: boolean;
 }
 
 export function FormInput<TForm extends FieldValues>({
@@ -22,27 +23,43 @@ export function FormInput<TForm extends FieldValues>({
   placeholder,
   required,
   step,
+  disabled,
 }: FormInputProps<TForm>) {
   return (
     <FormField
-      control={control as unknown as Control<FieldValues>}
-      name={name as unknown as FieldPath<FieldValues>}
-      rules={required ? { required: true } : undefined}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>{label}{required ? " *" : ""}</FormLabel>
-          <FormControl>
-            <Input
-  {...field}
-  type={type}
-  placeholder={placeholder ?? label}
-  step={step}
-  value={field.value ?? ""}
-/>
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
+      control={control}
+      name={name}
+      rules={{ required }}
+      render={({ field }) => {
+        const value = type === 'number' ? (field.value as number | undefined) ?? '' : (field.value as string | undefined) ?? '';
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+          const rawValue = e.target.value;
+          if (type === 'number') {
+            const numValue = rawValue === '' ? null : Number(rawValue);
+            field.onChange(numValue);
+          } else {
+            field.onChange(rawValue);
+          }
+        };
+
+        return (
+          <FormItem>
+            <FormLabel>{label}{required && " *"}</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                type={type}
+                placeholder={placeholder ?? label}
+                step={step}
+                disabled={disabled}
+                value={value}
+                onChange={handleChange}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        );
+      }}
     />
   );
 }

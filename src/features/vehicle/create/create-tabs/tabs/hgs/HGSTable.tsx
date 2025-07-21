@@ -5,28 +5,27 @@ import { DataTable } from "@/components/ui/table/data-table";
 import { Button } from "@/components/ui/button";
 import { PencilIcon, TrashIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Gps } from "./gps-constants";
+import { Hgs } from "./hgs-constants";
 
-interface GPSTableProps {
-  gpsRecords: Gps[];
+interface HGSTableProps {
+  hgsRecords: Hgs[];
   onEdit: (index: number) => void;
   onDelete: (index: number) => void;
-  highlightedIndex?: number | null;
 }
 
-export function GPSTable({ gpsRecords, onEdit, onDelete, highlightedIndex }: GPSTableProps) {
-  const columns: ColumnDef<Gps>[] = [
+export function HGSTable({ hgsRecords, onEdit, onDelete }: HGSTableProps) {
+  const columns: ColumnDef<Hgs>[] = [
     {
-      accessorKey: "brand",
-      header: "Marka",
+      accessorKey: "hgs_tag_no",
+      header: "HGS Etiket No",
     },
     {
-      accessorKey: "device_model",
-      header: "Cihaz Modeli",
+      accessorKey: "hgs_place",
+      header: "Alındığı Yer",
     },
     {
-      accessorKey: "sim_number",
-      header: "SIM Numarası",
+      accessorKey: "hgs_vehicle_class",
+      header: "Araç Sınıfı",
     },
     {
       accessorKey: "is_active",
@@ -60,18 +59,11 @@ export function GPSTable({ gpsRecords, onEdit, onDelete, highlightedIndex }: GPS
   ];
 
   const table = useReactTable({
-    data: gpsRecords,
+    data: hgsRecords,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
 
-      const getRowProps = (row: any) => {
-    if (row.index === highlightedIndex) {
-      return { className: 'bg-blue-50' };
-    }
-    return {};
-  };
-
-  return <DataTable table={table} getRowProps={getRowProps} className="w-full" />;
+  return <DataTable table={table} className="w-full" />;
 }

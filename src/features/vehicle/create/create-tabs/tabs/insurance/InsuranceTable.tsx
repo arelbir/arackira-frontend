@@ -1,130 +1,114 @@
 "use client";
 
-import { Row } from "@tanstack/react-table";
 import { useReactTable, getCoreRowModel, getSortedRowModel, ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/table/data-table";
 import { Button } from "@/components/ui/button";
 import { PencilIcon, TrashIcon, RefreshCwIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+
 import { formatDateTR } from "@/lib/utils";
 
+import { VehicleFormValues } from "@/features/vehicle/schemas";
+
+// Zenginleştirilmiş sigorta tipi, tabloya şirket ve tür adını da içerir.
+export type EnrichedInsurance = NonNullable<VehicleFormValues['insurances']>[number] & {
+  id: string; // from useFieldArray
+  insurance_company_name?: string;
+  insurance_type_name?: string;
+};
+
 interface InsuranceTableProps {
-  insurances: any[];
+  insurances: EnrichedInsurance[];
   onEdit: (index: number) => void;
   onDelete: (index: number) => void;
   onRenew: (index: number) => void;
-  insuranceTypes: any[];
 }
+
+const safeFormatDate = (dateValue: unknown) => {
+  if (!dateValue || typeof dateValue === 'boolean') {
+    return "—";
+  }
+  try {
+    const date = new Date(dateValue as string | number | Date);
+    if (isNaN(date.getTime())) {
+      return "—";
+    }
+    return formatDateTR(date);
+  } catch (error) {
+    return "—";
+  }
+};
 
 export function InsuranceTable({
   insurances,
   onEdit,
   onDelete,
   onRenew,
-  insuranceTypes,
 }: InsuranceTableProps) {
-  // Sigorta bitiş tarihine göre durumu hesapla
-  const getInsuranceStatus = (endDate: string) => {
-    if (!endDate) return { status: "inactive", label: "Belirsiz" };
-    
-    const today = new Date();
-    const end = new Date(endDate);
-    const diffTime = end.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) {
-      return { status: "expired", label: "Süresi Doldu" };
-    } else if (diffDays <= 30) {
-      return { status: "warning", label: `${diffDays} gün kaldı` };
-    } else {
-      return { status: "active", label: "Aktif" };
-    }
-  };
-  
-  // Tablo sütunlarını tanımla
-  const columns = [
+  const columns: ColumnDef<EnrichedInsurance>[] = [
     {
-      accessorKey: "insurance_type_id",
+      accessorKey: "insurance_type_name",
       header: "Sigorta Türü",
-      cell: ({ row }: { row: Row<any> }) => {
-        const typeId = row.original.insurance_type_id;
-        const typeLabel = insuranceTypes.find((x: any) => String(x.value) === String(typeId))?.label || `#${row.index + 1}`;
-        return <span className="font-medium">{typeLabel}</span>;
-      }
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.insurance_type_name || "-"}</span>
+      ),
     },
     {
-      accessorKey: "period",
+      id: "period",
       header: "Poliçe Süresi",
-      cell: ({ row }: { row: Row<any> }) => {
-        const { start_date, end_date } = row.original;
-        const status = getInsuranceStatus(end_date);
+      cell: ({ row }) => {
+        const startDate = row.original.start_date;
+        const endDate = row.original.end_date;
+
         return (
-          <div className="flex flex-col">
-            <div className="text-sm">
-              {formatDateTR(start_date) || "–"} → {formatDateTR(end_date) || "–"}
-            </div>
-            <Badge 
-              variant={
-                status.status === "expired" ? "destructive" : 
-                status.status === "warning" ? "warning" :
-                status.status === "active" ? "success" : "outline"
-              }
-              className="mt-1 w-fit text-xs"
-            >
-              {status.label}
-            </Badge>
+          <div className="text-sm">
+            {safeFormatDate(startDate)} → {safeFormatDate(endDate)}
           </div>
         );
-      }
+      },
     },
     {
-      accessorKey: "insurance_company_id",
+      accessorKey: "insurance_company_name",
       header: "Şirket",
-      cell: ({ row }: { row: Row<any> }) => {
-        return <span>{row.original.insurance_company_id ? "Şirket Adı" : "-"}</span>
-      }
+      cell: ({ row }) => <span>{row.original.insurance_company_name || "-"}</span>,
     },
     {
       accessorKey: "policy_number",
       header: "Poliçe No",
-      cell: ({ row }: { row: Row<any> }) => {
-        return <span>{row.original.policy_number || "-"}</span>
-      }
+      cell: ({ row }) => <span>{row.original.policy_number ? String(row.original.policy_number) : "-"}</span>
     },
     {
       accessorKey: "total_amount",
       header: "Tutar",
-      cell: ({ row }: { row: Row<any> }) => {
-        const amount = row.original.total_amount || row.original.amount;
-        if (!amount) return <span>-</span>;
-        const currency = row.original.currency || "TL";
-        return <span className="font-medium">{amount.toLocaleString('tr-TR')} {currency}</span>;
+      cell: ({ row }) => {
+        const amount = row.original.total_amount;
+        const currency = "TRY"; // Bu dinamik hale getirilebilir
+        return <span>{typeof amount === 'number' ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency }).format(amount) : "-"}</span>;
       }
     },
     {
       id: "actions",
       header: "İşlemler",
-      cell: ({ row }: { row: Row<any> }) => {
+      cell: ({ row }) => {
         return (
           <div className="flex gap-1">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               onClick={() => onEdit(row.index)}
               title="Düzenle"
             >
               <PencilIcon className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               onClick={() => onRenew(row.index)}
               title="Yenile"
             >
               <RefreshCwIcon className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               onClick={() => onDelete(row.index)}
               title="Sil"
@@ -134,13 +118,13 @@ export function InsuranceTable({
             </Button>
           </div>
         );
-      }
+      },
     }
   ];
   
   // TanStack table objesi oluştur
   const table = useReactTable({
-    data: insurances,
+    data: insurances || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
