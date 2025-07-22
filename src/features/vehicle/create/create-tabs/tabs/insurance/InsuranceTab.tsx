@@ -4,20 +4,20 @@ import React, { useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Drawer, DrawerTrigger, DrawerContent } from "@/components/ui/drawer";
+import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
-import { InsuranceTable } from "./InsuranceTable";
+import { InsuranceTable, EnrichedInsurance } from "./InsuranceTable";
 import { InsuranceForm } from "./InsuranceForm";
-import { EmptyState } from "@/components/ui/shared/empty-state";
 import { INSURANCE_MESSAGES, NEW_INSURANCE_RECORD } from "./insurance-constants";
 import { VehicleFormValues } from "@/features/vehicle/schemas";
-import { InsuranceDeleteConfirmDialog } from "@/features/vehicle/components/InsuranceDeleteConfirmDialog";
 import { useLookupData } from "@/features/vehicle/hooks/useLookupData";
-import { EnrichedInsurance } from "./InsuranceTable";
+import { TabContentWrapper } from "../components/TabContentWrapper";
+import { EmptyState } from '@/components/ui/shared/empty-state';
 
 export function InsuranceTab() {
-  const { control, watch } = useFormContext<VehicleFormValues>();
+  const { control, watch, trigger, getValues, setValue } = useFormContext<VehicleFormValues>();
   const vehicleId = watch("id");
 
   const { fields, append, remove } = useFieldArray({
@@ -26,129 +26,143 @@ export function InsuranceTab() {
   });
 
   const { insuranceTypes, insuranceCompanies } = useLookupData();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'add' | 'edit' | null>(null);
+  const [selectedInsuranceIndex, setSelectedInsuranceIndex] = useState<number | null>(null);
+  const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
+  const [itemToDeleteIndex, setItemToDeleteIndex] = useState<number | null>(null);
 
   const companyNameMap = new Map(insuranceCompanies?.map(c => [String(c.id), c.name]));
   const typeNameMap = new Map(insuranceTypes?.map(t => [String(t.id), t.name]));
 
-  const enrichedInsurances: EnrichedInsurance[] = fields.map((field) => ({
+  const enrichedInsurances: EnrichedInsurance[] = fields.map((field, index) => ({
     ...field,
+    id: fields[index].id, // Ensure the useFieldArray id is passed
     insurance_company_name: companyNameMap.get(String(field.insurance_company_id)),
     insurance_type_name: typeNameMap.get(String(field.insurance_type_id)),
   }));
 
-  const enrichedItemToDelete = deleteIndex !== null ? enrichedInsurances[deleteIndex] : null;
-
-  const handleAddNew = () => {
-    append(NEW_INSURANCE_RECORD);
-    setEditingIndex(fields.length);
-    setIsDrawerOpen(true);
-  };
-
-  const handleEdit = (index: number) => {
-    setEditingIndex(index);
-    setIsDrawerOpen(true);
-  };
-
-  const handleSave = () => {
-    // Form state is managed by react-hook-form, so we just close the drawer.
-    setIsDrawerOpen(false);
-    setEditingIndex(null);
-    toast.success(INSURANCE_MESSAGES.SUCCESS);
-  };
-
-  const handleCancel = () => {
-    // If we were adding a new record, remove it on cancel.
-    if (editingIndex !== null && editingIndex >= fields.length - 1) {
-      // This logic might need adjustment if sorting/filtering is added
+  const openDialog = (mode: 'add' | 'edit', index?: number) => {
+    setDialogMode(mode);
+    if (mode === 'add') {
+      const newIndex = fields.length;
+      append(NEW_INSURANCE_RECORD, { shouldFocus: false });
+      setSelectedInsuranceIndex(newIndex);
+    } else if (index !== undefined) {
+      setSelectedInsuranceIndex(index);
     }
-    setIsDrawerOpen(false);
-    setEditingIndex(null);
+    setDrawerOpen(true);
   };
 
-  const openDeleteConfirm = (index: number) => {
-    setDeleteIndex(index);
-  };
-
-  const handleDelete = () => {
-    if (deleteIndex !== null) {
-      remove(deleteIndex);
-      setDeleteIndex(null);
-      toast.success(INSURANCE_MESSAGES.DELETE_SUCCESS);
+  const closeDialog = () => {
+    if (dialogMode === 'add' && selectedInsuranceIndex !== null) {
+      remove(selectedInsuranceIndex);
     }
+    setDrawerOpen(false);
+    setDialogMode(null);
+    setSelectedInsuranceIndex(null);
+  };
+
+  const handleSave = async () => {
+    if (selectedInsuranceIndex === null) return;
+
+    const isValid = await trigger(`insurances.${selectedInsuranceIndex}`);
+    if (isValid) {
+      setDrawerOpen(false);
+      setDialogMode(null);
+      setSelectedInsuranceIndex(null);
+      toast.success(INSURANCE_MESSAGES.SUCCESS);
+    }
+  };
+
+  const openDeleteAlert = (index: number) => {
+    setItemToDeleteIndex(index);
+    setDeleteAlertOpen(true);
+  };
+
+  const closeDeleteAlert = () => {
+    setItemToDeleteIndex(null);
+    setDeleteAlertOpen(false);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (itemToDeleteIndex === null) return;
+
+    const itemToDelete = fields[itemToDeleteIndex];
+    if (itemToDelete.id) {
+      const currentDeletedIds = getValues('deleted_ids.insurances') || [];
+      setValue('deleted_ids.insurances', [...currentDeletedIds, itemToDelete.id]);
+    }
+
+    remove(itemToDeleteIndex);
+    toast.success(INSURANCE_MESSAGES.DELETE_SUCCESS);
+    closeDeleteAlert();
   };
 
   if (!vehicleId) {
     return (
-      <div>
-        <EmptyState
-          icon={<PlusIcon className="size-12 text-yellow-300" />}
-          title="Sigorta kaydı eklemek için önce taslak araç oluşturmalısınız."
-          description="'Taslak Kaydet' butonunu kullanarak önce aracı kaydedin."
-          variant="warning"
-        />
-      </div>
+      <EmptyState
+        icon={<PlusIcon className="size-12 text-yellow-300" />}
+        title="Sigorta kaydı eklemek için önce taslak araç oluşturmalısınız."
+        description="'Taslak Kaydet' butonunu kullanarak önce aracı kaydedin."
+        variant="warning"
+      />
     );
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold">Sigorta Kayıtları</h2>
-        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="right">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-medium">Sigorta Kayıtları</h3>
+        <Drawer open={isDrawerOpen} onOpenChange={setDrawerOpen} direction="right">
           <DrawerTrigger asChild>
-            <Button type="button" variant="default" onClick={handleAddNew}>
+            <Button type="button" onClick={() => openDialog('add')}>
               <PlusIcon className="size-4 mr-2" />
               Sigorta Ekle
             </Button>
           </DrawerTrigger>
           <DrawerContent className="w-full md:w-1/2 lg:w-1/3 p-4">
-            <h3 className="text-lg font-semibold mb-4">
-              {editingIndex === null ? INSURANCE_MESSAGES.NEW : INSURANCE_MESSAGES.EDIT}
-            </h3>
-            {editingIndex !== null && (
-              <InsuranceForm
-                index={editingIndex}
-                onSave={handleSave}
-                onCancel={handleCancel}
-              />
-            )}
+            <DrawerHeader className="text-left px-0 pt-0">
+              <DrawerTitle>{dialogMode === 'add' ? INSURANCE_MESSAGES.NEW : INSURANCE_MESSAGES.EDIT}</DrawerTitle>
+              <DrawerDescription>Araç için sigorta bilgilerini buradan ekleyebilir veya güncelleyebilirsiniz.</DrawerDescription>
+            </DrawerHeader>
+
+            <div className="p-4 overflow-y-auto">
+              {selectedInsuranceIndex !== null && (
+                <InsuranceForm index={selectedInsuranceIndex} />
+              )}
+            </div>
+
+            <DrawerFooter className="pt-4 flex-row justify-end border-t">
+              <DrawerClose asChild>
+                <Button type="button" variant="outline" onClick={closeDialog}>İptal</Button>
+              </DrawerClose>
+              <Button type="button" onClick={handleSave}>Kaydet</Button>
+            </DrawerFooter>
           </DrawerContent>
         </Drawer>
       </div>
 
-      <div className="flex-1 min-h-[300px] flex flex-col overflow-auto w-full mb-4 border rounded-md">
-        {fields.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <EmptyState
-              icon={<PlusIcon className="size-10 text-gray-400" />}
-              title="Henüz sigorta kaydı eklenmedi."
-              description="Yeni bir sigorta poliçesi eklemek için butona tıklayın."
-            />
-          </div>
-        ) : (
-          <InsuranceTable
-            insurances={enrichedInsurances}
-            onEdit={handleEdit}
-            onDelete={openDeleteConfirm}
-            onRenew={() => {}}
-          />
-        )}
-      </div>
+      <TabContentWrapper isEmpty={fields.length === 0} emptyMessage="Henüz sigorta kaydı eklenmedi.">
+        <InsuranceTable
+          insurances={enrichedInsurances}
+          onEdit={(index) => openDialog('edit', index)}
+          onDelete={openDeleteAlert}
+        />
+      </TabContentWrapper>
 
-      <InsuranceDeleteConfirmDialog
-        open={deleteIndex !== null}
-        onOpenChange={(isOpen) => !isOpen && setDeleteIndex(null)}
-        itemToDelete={enrichedItemToDelete}
-        onConfirm={() => {
-          handleDelete();
-          setDeleteIndex(null);
-        }}
-        onCancel={() => setDeleteIndex(null)}
-        isDeleting={false} // This can be connected to a loading state if the delete is async
-      />
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{INSURANCE_MESSAGES.DELETE_TITLE}</AlertDialogTitle>
+            <AlertDialogDescription>{INSURANCE_MESSAGES.DELETE_CONFIRM}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={closeDeleteAlert}>İptal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Sil</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
-};
+}

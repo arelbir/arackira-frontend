@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { format as formatDate } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+
 import { CalendarIcon } from "@radix-ui/react-icons";
 
 interface DatePickerProps {
@@ -41,7 +41,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({ date, onChange, placehol
           mode="single"
           selected={date}
           onSelect={d => {
-            onChange(d ?? undefined);
+            if (d) {
+              // Create a new Date object in UTC to avoid timezone shifts.
+              // This ensures the calendar day selected by the user is the one sent to the server.
+              const utcDate = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+              onChange(utcDate);
+            } else {
+              onChange(undefined);
+            }
             setOpen(false);
           }}
         />

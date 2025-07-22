@@ -5,11 +5,11 @@
  * @param date - ISO date string or null
  * @returns Formatted date string or '-' if date is null/invalid
  */
-export const formatDate = (date: string | null | undefined): string => {
+export const formatDate = (date: string | Date | null | undefined): string => {
   if (!date) return '-';
   
   try {
-    const dateObj = new Date(date);
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
     if (isNaN(dateObj.getTime())) return '-';
     
     return dateObj.toLocaleDateString('tr-TR', {
@@ -18,7 +18,7 @@ export const formatDate = (date: string | null | undefined): string => {
       year: 'numeric'
     });
   } catch (error) {
-    console.error('Date formatting error:', error);
+    
     return '-';
   }
 };

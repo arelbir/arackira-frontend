@@ -22,7 +22,10 @@ export const useVehicleMutation = () => {
 
       await toast.promise(promise, {
         loading: 'Araç oluşturuluyor...',
-        success: 'Araç başarıyla oluşturuldu!',
+        success: () => {
+          window.location.reload();
+          return 'Araç başarıyla oluşturuldu!';
+        },
         error: (err) => err.message || 'Araç oluşturulurken bir hata oluştu.',
       });
     } finally {
@@ -45,7 +48,10 @@ export const useVehicleMutation = () => {
 
       await toast.promise(promise, {
         loading: 'Araç güncelleniyor...',
-        success: 'Araç başarıyla güncellendi!',
+        success: () => {
+          window.location.reload();
+          return 'Araç başarıyla güncellendi!';
+        },
         error: (err) => err.message || 'Araç güncellenirken bir hata oluştu.',
       });
     } finally {

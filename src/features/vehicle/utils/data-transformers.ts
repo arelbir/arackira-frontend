@@ -18,10 +18,24 @@ export const parseApiDataToFormValues = (apiData: any): Partial<VehicleFormValue
     const parsed = vehicleApiResponseSchema.parse(apiData);
     // Zod şeması, tüm tipleri (string -> Date, string -> number) zaten dönüştürdü.
     // Şimdi sadece `data` ve `included` alanlarını formun beklediği düz yapıya getiriyoruz.
-    return {
+    const combinedData = {
       ...parsed.data,
       ...(parsed.included || {}),
     };
+
+    // Handle potential null values that TypeScript considers incompatible with 'undefined'
+    return {
+      ...combinedData,
+      branch_id: combinedData.branch_id === null ? undefined : combinedData.branch_id,
+      brand_id: combinedData.brand_id === null ? undefined : combinedData.brand_id,
+      vehicle_type_id: combinedData.vehicle_type_id === null ? undefined : combinedData.vehicle_type_id,
+      model_id: combinedData.model_id === null ? undefined : combinedData.model_id,
+      color_id: combinedData.color_id === null ? undefined : combinedData.color_id,
+      fuel_type_id: combinedData.fuel_type_id === null ? undefined : combinedData.fuel_type_id,
+      transmission_id: combinedData.transmission_id === null ? undefined : combinedData.transmission_id,
+      vehicle_group_id: combinedData.vehicle_group_id === null ? undefined : combinedData.vehicle_group_id,
+    };
+
   } catch (error) {
     // Hata durumunda formu boş döndürerek çökmesini engelle.
     // Gerçek bir uygulamada burada daha gelişmiş bir hata yönetimi (örn: Sentry'ye loglama) yapılabilir.
@@ -37,7 +51,11 @@ export const parseApiDataToFormValues = (apiData: any): Partial<VehicleFormValue
  */
 function deepFormatDatesForAPI(data: any): any {
   if (data instanceof Date) {
-    return data.toISOString();
+    // .toISOString() can cause timezone shifts. Instead, we build the string from UTC parts.
+    const year = data.getUTCFullYear();
+    const month = (data.getUTCMonth() + 1).toString().padStart(2, '0');
+    const day = data.getUTCDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   if (Array.isArray(data)) {

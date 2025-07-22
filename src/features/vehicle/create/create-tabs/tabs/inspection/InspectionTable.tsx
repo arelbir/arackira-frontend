@@ -2,8 +2,7 @@
 
 import { useReactTable, getCoreRowModel, getSortedRowModel, ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/table/data-table";
-import { Button } from "@/components/ui/button";
-import { PencilIcon, TrashIcon } from "lucide-react";
+import { createActionsColumn } from "@/components/ui/table/table-helpers";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTR } from "@/lib/utils";
 
@@ -84,35 +83,11 @@ export function InspectionTable({ inspections, onEdit, onDelete }: InspectionTab
       cell: ({ row }) => <span>{row.original.inspection_company_name || "–"}</span>,
     },
     {
-      accessorKey: "cost",
-      header: "Maliyet",
-      cell: ({ row }) => {
-        const cost = row.original.cost;
-        return typeof cost === 'number'
-          ? cost.toLocaleString("tr-TR", { style: "currency", currency: "TRY" })
-          : "–";
-      },
+      accessorKey: "result",
+      header: "Sonuç",
+      cell: ({ row }) => <span>{row.original.result || "–"}</span>,
     },
-    {
-      id: "actions",
-      header: "İşlemler",
-      cell: ({ row }) => (
-        <div className="flex gap-1">
-          <Button variant="ghost" size="icon" onClick={() => onEdit(row.index)} title="Düzenle">
-            <PencilIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(row.index)}
-            title="Sil"
-            className="text-red-500 hover:text-red-600 hover:bg-red-50"
-          >
-            <TrashIcon className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
-    },
+    createActionsColumn<EnrichedInspection>({ onEdit, onDelete }),
   ];
 
   const table = useReactTable({

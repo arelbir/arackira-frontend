@@ -6,13 +6,15 @@ export type Gps = FieldArrayWithId<VehicleFormValues, "gps", "id">;
 
 // UI messages for GPS module
 export const GPS_MESSAGES = {
-  SUCCESS: "GPS kaydı başarıyla kaydedildi",
-  ERROR: "GPS kaydı oluşturulurken bir hata oluştu",
-  DELETE_SUCCESS: "GPS kaydı başarıyla silindi",
+  SUCCESS: "GPS kaydı başarıyla kaydedildi.",
+  ERROR: "GPS kaydı kaydedilirken bir hata oluştu.",
+  DELETE_SUCCESS: "GPS kaydı başarıyla silindi.",
   NEW: "Yeni GPS Kaydı",
   EDIT: "GPS Kaydını Düzenle",
-  DELETE: "GPS kaydı silindi",
-  DELETE_CONFIRM: "Bu GPS kaydını silmek istediğinizden emin misiniz?",
+  delete: "Sil",
+  deleteTitle: "Kaydı Silmek Üzeresiniz",
+  deleteMessage: "Bu GPS kaydını kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+  cancel: "İptal",
 };
 
 // Default values for a new GPS record, compatible with gpsSchema

@@ -5,8 +5,9 @@ export const INSURANCE_MESSAGES = {
   DELETE_SUCCESS: "Sigorta kaydı başarıyla silindi",
   NEW: "Yeni Sigorta Kaydı",
   EDIT: "Sigorta Kaydını Düzenle",
-  DELETE: "Sigorta kaydı silindi",
-  DELETE_CONFIRM: "Bu sigorta kaydını silmek istediğinizden emin misiniz?",
+  DELETE: "Sil",
+  DELETE_TITLE: "Sigorta Kaydını Sil",
+  DELETE_CONFIRM: "Bu sigorta kaydını kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
   RENEW: "Sigorta kaydı yenilendi",
 };
 
@@ -20,7 +21,7 @@ export const NEW_INSURANCE_RECORD = {
   start_date: null,
   end_date: null,
   total_amount: 0,
-  currency: 'TL', // Varsayılan para birimi
+  currency: 'TRY', // Varsayılan para birimi
   description: '',
 };
 

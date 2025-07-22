@@ -22,5 +22,5 @@ export const NEW_HGS_RECORD = {
   hgs_tag_no: '',
   hgs_vehicle_class: '',
   is_active: true,
-  loading_date: null,
+  loading_date: new Date(),
 };

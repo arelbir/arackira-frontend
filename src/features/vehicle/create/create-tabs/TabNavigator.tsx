@@ -13,7 +13,7 @@ import { useVehicleMutation } from '@/features/vehicle/hooks/useVehicleMutation'
 import { VehicleFormValues } from '../../schemas';
 import { BasicTab } from './tabs/BasicTab';
 import { PurchaseTab } from './tabs/PurchaseTab';
-import { UttsTab } from './tabs/UTTSTab';
+import { UttsTab } from './tabs/utts/UTTSTab';
 import { ReviewTab } from './tabs/ReviewTab';
 import { GPSTab } from './tabs/gps/GPSTab';
 import { InspectionTab } from './tabs/inspection/InspectionTab';

@@ -4,24 +4,30 @@ import { useState } from 'react';
 import { useFormContext, useFieldArray } from 'react-hook-form';
 import { VehicleFormValues } from '@/features/vehicle/schemas/vehicle.schemas';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter, DrawerDescription, DrawerClose } from '@/components/ui/drawer';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { GPSForm } from './GPSForm';
 import { GPSTable } from './GPSTable';
 import { Gps, NEW_GPS_RECORD, GPS_MESSAGES } from './gps-constants';
+import { PlusIcon } from 'lucide-react';
+import { TabContentWrapper } from '../components/TabContentWrapper';
 
-interface GPSTabProps {
-  onSubmit: (data: VehicleFormValues) => void;
-}
-
-export function GPSTab({ onSubmit }: GPSTabProps) {
-    const { control, trigger, handleSubmit } = useFormContext<VehicleFormValues>();
+// onSubmit prop'u artık TabNavigator tarafından yönetildiği için kaldırıldı.
+export function GPSTab() {
+    const { control, trigger } = useFormContext<VehicleFormValues>();
   const { fields, append, remove } = useFieldArray({ control, name: 'gps' });
 
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit' | null>(null);
   const [selectedGpsIndex, setSelectedGpsIndex] = useState<number | null>(null);
   const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
+  const [itemToDeleteIndex, setItemToDeleteIndex] = useState<number | null>(null);
+
+  const { getValues, setValue } = useFormContext<VehicleFormValues>();
+
+  const handleEdit = (index: number) => {
+    openDialog('edit', index);
+  };
 
   const openDialog = (mode: 'add' | 'edit', index?: number) => {
     setDialogMode(mode);
@@ -36,13 +42,43 @@ export function GPSTab({ onSubmit }: GPSTabProps) {
   };
 
   const closeDialog = () => {
-    // "Ekle" modunda diyalog kapatılırsa, yeni eklenen ama kaydedilmeyen boş kaydı kaldır.
+    // "Ekle" modunda diyalog kapatılırsa ve kullanıcı bir şey girmeden kapatıyorsa, kaydı kaldır.
     if (dialogMode === 'add' && selectedGpsIndex !== null) {
-      remove(selectedGpsIndex);
+        // Not: Bu kısım daha akıllı hale getirilebilir. 
+        // Örneğin, kullanıcının forma herhangi bir veri girip girmediğini kontrol edebiliriz.
+        // Şimdilik, ekleme modunda iptal her zaman kaydı kaldırır.
+        remove(selectedGpsIndex);
     }
     setDialogOpen(false);
     setDialogMode(null);
     setSelectedGpsIndex(null);
+  };
+
+  const openDeleteAlert = (index: number) => {
+    setItemToDeleteIndex(index);
+    setDeleteAlertOpen(true);
+  };
+
+  const closeDeleteAlert = () => {
+    setItemToDeleteIndex(null);
+    setDeleteAlertOpen(false);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (itemToDeleteIndex === null) return;
+
+    const itemToDelete = fields[itemToDeleteIndex];
+
+    // Eğer kayıt veritabanında mevcutsa (ID'si varsa), ID'sini silinecekler listesine ekle.
+    if (itemToDelete.id) {
+        const currentDeletedIds = getValues('deleted_ids.gps') || [];
+        setValue('deleted_ids.gps', [...currentDeletedIds, itemToDelete.id]);
+    }
+
+    // Kaydı UI'dan (useFieldArray state'inden) kaldır.
+    remove(itemToDeleteIndex);
+    
+    closeDeleteAlert();
   };
 
   const handleSave = async () => {
@@ -50,79 +86,73 @@ export function GPSTab({ onSubmit }: GPSTabProps) {
 
     const isValid = await trigger(`gps.${selectedGpsIndex}`);
     if (isValid) {
-      await handleSubmit(onSubmit)();
+      // Sadece diyaloğu kapat, ana kaydetme işlemi TabNavigator'dan yapılacak.
       setDialogOpen(false);
       setDialogMode(null);
       setSelectedGpsIndex(null);
     }
   };
 
-  const handleDelete = (index: number) => {
-    setSelectedGpsIndex(index);
-    setDeleteAlertOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (selectedGpsIndex !== null) {
-      remove(selectedGpsIndex);
-    }
-    setDeleteAlertOpen(false);
-    setSelectedGpsIndex(null);
-  };
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-medium">Uydu Takip (GPS) Kayıtları</h3>
-        <Button type="button" onClick={() => openDialog('add')}>
-          Yeni GPS Ekle
-        </Button>
+        <Drawer open={isDialogOpen} onOpenChange={setDialogOpen} direction="right">
+          <DrawerTrigger asChild>
+            <Button type="button" onClick={() => openDialog('add')}>
+            <PlusIcon className="size-4 mr-2" />
+              Yeni GPS Ekle
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="w-full md:w-1/2 lg:w-2/5 p-4">
+            <DrawerHeader className="text-left px-0 pt-0">
+              <DrawerTitle>{dialogMode === 'add' ? 'Yeni GPS Ekle' : 'GPS Düzenle'}</DrawerTitle>
+              <DrawerDescription>
+                Araç için GPS bilgilerini buradan ekleyebilir veya güncelleyebilirsiniz.
+              </DrawerDescription>
+            </DrawerHeader>
+            
+            <div className="p-4 overflow-y-auto">
+              {selectedGpsIndex !== null && (
+                <GPSForm 
+                  index={selectedGpsIndex} 
+                />
+              )}
+            </div>
+            <DrawerFooter className="pt-4 flex-row justify-end border-t">
+              <DrawerClose asChild>
+                  <Button type="button" variant="outline" onClick={closeDialog}>
+                    İptal
+                  </Button>
+              </DrawerClose>
+              <Button type="button" onClick={handleSave}>
+                Kaydet
+              </Button>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       </div>
 
-      <div className="flex-1 min-h-[300px] flex flex-col overflow-auto w-full mb-4 border rounded-md">
-        {fields.length > 0 ? (
-          <GPSTable
-            gpsRecords={fields as Gps[]}
-            onEdit={(index) => openDialog('edit', index)}
-            onDelete={handleDelete}
-            highlightedIndex={dialogMode === 'add' ? selectedGpsIndex : null}
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground">Henüz GPS kaydı eklenmemiş.</p>
-          </div>
-        )}
-      </div>
+      <TabContentWrapper isEmpty={fields.length === 0} emptyMessage="Kayıtlı GPS bulunmamaktadır.">
+        <GPSTable 
+          gpsRecords={fields as Gps[]} 
+          onEdit={handleEdit} 
+          onDelete={openDeleteAlert} 
+        />
+      </TabContentWrapper>
 
-      <Dialog open={isDialogOpen} onOpenChange={(open) => (open ? setDialogOpen(true) : closeDialog())}>
-        <DialogContent className="sm:max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>{dialogMode === 'add' ? GPS_MESSAGES.NEW : GPS_MESSAGES.EDIT}</DialogTitle>
-            <DialogDescription>
-              Bu ekranda araç için yeni bir GPS kaydı oluşturabilir veya mevcut bir kaydı güncelleyebilirsiniz.
-            </DialogDescription>
-          </DialogHeader>
-          {selectedGpsIndex !== null && <GPSForm index={selectedGpsIndex} />}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={closeDialog}>
-              İptal
-            </Button>
-            <Button type="button" onClick={handleSave}>
-              Kaydet
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
+      {/* Silme Onayı için AlertDialog */}
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
-            <AlertDialogDescription>{GPS_MESSAGES.DELETE_CONFIRM}</AlertDialogDescription>
+            <AlertDialogTitle>{GPS_MESSAGES.deleteTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {GPS_MESSAGES.deleteMessage}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Sil</AlertDialogAction>
+            <AlertDialogCancel onClick={closeDeleteAlert}>{GPS_MESSAGES.cancel}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>{GPS_MESSAGES.delete}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

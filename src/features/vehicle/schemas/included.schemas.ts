@@ -33,11 +33,11 @@ export const inspectionSchema = z.object({
 });
 
 export const uttsSchema = z.object({
-  id: z.number(),
-  vehicle_id: z.number(),
+  id: z.number().optional(),
+  vehicle_id: z.number().optional(),
   purchase_date: z.coerce.date().optional().nullable(),
   installation_date: z.coerce.date().optional().nullable(),
-  utts_code: z.string().nullable().optional(),
+  utts_code: z.string().min(1, "UTTS Kodu zorunludur."),
   created_at: z.coerce.date().optional().nullable(),
   updated_at: z.coerce.date().optional().nullable(),
 });
@@ -65,8 +65,8 @@ export const gpsSchema = z.object({
   sim_number: z.string().optional(),
   device_model: z.string().optional(),
   device_serial_number: z.string().optional(),
-  subscription_start: z.coerce.date().optional().nullable(),
-  subscription_end: z.coerce.date().optional().nullable(),
+  subscription_start_date: z.coerce.date().optional().nullable(),
+  subscription_end_date: z.coerce.date().optional().nullable(),
   service_provider: z.string().optional(),
   description: z.string().optional(),
   is_active: z.boolean().optional(),

@@ -36,7 +36,7 @@ export class VehicleService {
   static async fetchVehicleWithRelated(id: number): Promise<ApiResponse> {
     try {
       const response = await apiRequest({
-        url: `vehicles/${id}/complete`,
+        url: `/api/vehicles/${id}/with-related`,
         method: 'GET',
         requiresAuth: true
       }) as ApiResponse;
@@ -68,8 +68,8 @@ export class VehicleService {
 
       // API endpoint'i belirleme
       const url = editMode && vehicleId 
-        ? `vehicles/${vehicleId}/with-related` 
-        : 'vehicles/with-related';
+        ? `/api/vehicles/${vehicleId}/with-related` 
+        : '/api/vehicles/with-related';
       
       // API isteği yap
       const response = await apiRequest({

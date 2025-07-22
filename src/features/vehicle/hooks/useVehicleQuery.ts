@@ -16,7 +16,7 @@ const vehicleFetcher = async (url: string) => {
 
 export const useVehicleQuery = (vehicleId?: number) => {
   // SWR, key olarak null aldığında isteği yapmaz. Bu, koşullu veri çekme için idealdir.
-  const swrKey = vehicleId ? `/vehicles/${vehicleId}/complete` : null;
+  const swrKey = vehicleId ? `/api/vehicles/${vehicleId}/with-related` : null;
 
   const { data, error, isLoading } = useSWR(swrKey, vehicleFetcher);
 
