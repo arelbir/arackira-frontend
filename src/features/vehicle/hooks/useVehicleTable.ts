@@ -72,7 +72,6 @@ export const useVehicleTable = (vehicles: StrictVehicle[]): UseVehicleTableResul
       { accessorKey: 'registration_document_number', header: 'Ruhsat No', meta: { label: 'Ruhsat No', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['registration_document_number'], '-') },
       { accessorKey: 'package', header: 'Paket', meta: { label: 'Paket', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['package'], '-') },
       { accessorKey: 'version', header: 'Versiyon', meta: { label: 'Versiyon', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['version'], '-') },
-      { accessorKey: 'vehicle_group_id', header: 'Araç Grubu', meta: { label: 'Araç Grubu', variant: 'number' }, cell: ({ row }) => safeAccess(row.original, ['vehicle_group_id'], '-') },
       { accessorKey: 'body_type', header: 'Kasa Tipi', meta: { label: 'Kasa Tipi', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['body_type'], '-') },
       { accessorKey: 'transmission_id', header: 'Vites Tipi', meta: { label: 'Vites Tipi', variant: 'number' }, cell: ({ row }) => safeAccess(row.original, ['transmission_id'], '-') },
       { header: 'Vites Tipi Adı', accessorFn: row => safeAccess(row, ['transmission', 'name'], '-'), meta: { label: 'Vites Tipi Adı', variant: 'text' } },

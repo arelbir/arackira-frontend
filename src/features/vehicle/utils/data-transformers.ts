@@ -33,7 +33,7 @@ export const parseApiDataToFormValues = (apiData: any): Partial<VehicleFormValue
       color_id: combinedData.color_id === null ? undefined : combinedData.color_id,
       fuel_type_id: combinedData.fuel_type_id === null ? undefined : combinedData.fuel_type_id,
       transmission_id: combinedData.transmission_id === null ? undefined : combinedData.transmission_id,
-      vehicle_group_id: combinedData.vehicle_group_id === null ? undefined : combinedData.vehicle_group_id,
+      supplier_id: combinedData.supplier_id === null ? undefined : combinedData.supplier_id,
     };
 
   } catch (error) {

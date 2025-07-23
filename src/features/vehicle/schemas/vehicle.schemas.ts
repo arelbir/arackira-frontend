@@ -13,7 +13,6 @@ export const vehicleBaseSchema = z.object({
   model_id: z.number().nullable(),
   version: z.string().optional().nullable(),
   package: z.string().optional().nullable(),
-  vehicle_group_id: z.number().nullable(),
   body_type: z.string().optional().nullable(),
   fuel_type_id: z.number().nullable(),
   transmission_id: z.number().optional().nullable(),
@@ -25,7 +24,6 @@ export const vehicleBaseSchema = z.object({
   engine_number: z.string().optional().nullable(),
   first_registration_date: z.coerce.date().optional().nullable(),
   registration_document_number: z.string().optional().nullable(),
-  vehicle_responsible_id: z.number().nullable(),
   vehicle_km: z.number().nullable(),
   next_maintenance_date: z.coerce.date().optional().nullable(),
   inspection_expiry_date: z.coerce.date().optional().nullable(),
@@ -34,7 +32,7 @@ export const vehicleBaseSchema = z.object({
   exhaust_stamp_expiry_date: z.coerce.date().optional().nullable(),
   vehicle_status_id: z.number().nullable(),
   tsb_code: z.string().optional().nullable(),
-  is_draft: z.boolean(),
+  is_draft: z.boolean().nullable().optional(),
   supplier_id: z.number().nullable(),
   purchase_price: stringToNumber.optional().nullable(), // API returns string
   invoice_date: z.coerce.date().optional().nullable(), // API returns string

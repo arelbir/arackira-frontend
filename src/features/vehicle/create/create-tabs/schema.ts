@@ -16,17 +16,10 @@ const idSchema = z.preprocess(
   z.number().int().positive()
 );
 
-// ID alanları için opsiyonel olan schema
-const optionalIdSchema = z.preprocess(
-  stringToNumber,
-  z.number().int().positive().optional()
-);
-
 export const basicInfoSchema = z.object({
   plate_number: z.string().min(1, 'Plaka zorunlu'),
   branch_id: idSchema,
-  // vehicle_group_id field removed from UI; keep optional for backward compatibility
-  vehicle_group_id: optionalIdSchema,
+
   vehicle_type_id: idSchema,
   brand_id: idSchema,
   model_id: idSchema,
@@ -72,7 +65,6 @@ export const purchaseSchema = z.object({
 export const insuranceSchema = z.object({
   insurance_expiry_date: z.string().optional(),
   casco_expiry_date: z.string().optional(),
-  vehicle_responsible_id: z.preprocess(stringToNumber, z.number().int().nullable().optional()),
 });
 
 // utts şeması 
