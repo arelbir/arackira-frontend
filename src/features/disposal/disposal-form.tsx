@@ -2,12 +2,13 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { disposalSchema, DisposalFormValues } from './disposal-schema';
-import { useVehicle } from '@/features/vehicle/hooks/useVehicle';
+
 
 interface DisposalFormProps {
   onSubmit: (data: DisposalFormValues) => void;
   loading?: boolean;
   initialData?: Partial<DisposalFormValues>;
+  vehicles?: any;
 }
 
 const DISPOSAL_TYPES = [
@@ -18,13 +19,9 @@ const DISPOSAL_TYPES = [
 const DisposalForm: React.FC<DisposalFormProps> = ({
   onSubmit,
   loading,
-  initialData
+  initialData,
+  vehicles
 }) => {
-  const {
-    vehicles,
-    loading: vehiclesLoading,
-    error: vehiclesError
-  } = useVehicle();
   const form = useForm<DisposalFormValues>({
     resolver: zodResolver(disposalSchema),
     defaultValues: initialData || {
@@ -70,6 +67,11 @@ const DisposalForm: React.FC<DisposalFormProps> = ({
     }
   }, [initialData]);
 
+  const plateOptions = vehicles ? Object.entries(vehicles).map(([id, v]: [string, any]) => ({
+    value: id,
+    label: `${v.plate} - ${v.brand} ${v.model}`
+  })) : [];
+
   return (
     <form
       id='disposal-form'
@@ -78,27 +80,17 @@ const DisposalForm: React.FC<DisposalFormProps> = ({
     >
       <div className='flex flex-col gap-1'>
         <label className='text-foreground font-semibold'>Araç</label>
-        {vehiclesLoading ? (
-          <div className='text-muted-foreground text-xs'>
-            Araçlar yükleniyor...
-          </div>
-        ) : vehiclesError ? (
-          <div className='text-xs text-red-600'>
-            Araçlar alınamadı: {vehiclesError}
-          </div>
-        ) : (
-          <select
-            {...form.register('vehicle_id', { valueAsNumber: true })}
-            className='border-border focus:ring-primary bg-muted text-foreground placeholder:text-muted-foreground w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none'
-          >
-            <option value=''>Araç seçin</option>
-            {vehicles.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.plate} - {v.brand} {v.model}
-              </option>
-            ))}
-          </select>
-        )}
+        <select
+          {...form.register('vehicle_id', { valueAsNumber: true })}
+          className='border-border focus:ring-primary bg-muted text-foreground placeholder:text-muted-foreground w-full rounded-xl border px-4 py-3 focus:ring-2 focus:outline-none'
+        >
+          <option value=''>Araç seçin</option>
+          {plateOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
         {form.formState.errors.vehicle_id && (
           <span className='text-xs text-red-600'>
             {form.formState.errors.vehicle_id?.message}

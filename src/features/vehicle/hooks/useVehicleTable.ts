@@ -48,10 +48,10 @@ export const useVehicleTable = (vehicles: StrictVehicle[]): UseVehicleTableResul
         enableColumnFilter: false
       },
       { accessorKey: 'id', header: 'ID', meta: { label: 'ID', variant: 'text' }, enableColumnFilter: false },
-      { accessorKey: 'plate_number', header: 'Plaka', meta: { label: 'Plaka', variant: 'text', placeholder: 'Plaka' }, enableColumnFilter: true },
-      { accessorKey: 'chassis_number', header: 'Şasi No', meta: { label: 'Şasi No', variant: 'text' }, enableColumnFilter: true },
-      { header: 'Marka', accessorFn: row => row.brand?.name || '-', meta: { label: 'Marka', variant: 'text' }, enableColumnFilter: true },
-      { header: 'Model', accessorFn: row => row.model?.name || '-', meta: { label: 'Model', variant: 'text' }, enableColumnFilter: true },
+      { accessorKey: 'plate_number', header: 'Plaka', meta: { label: 'Plaka', variant: 'text', placeholder: 'Plaka', showFilter: true }, enableColumnFilter: true },
+      { accessorKey: 'chassis_number', header: 'Şasi No', meta: { label: 'Şasi No', variant: 'text', showFilter: true }, enableColumnFilter: true },
+      { header: 'Marka', accessorFn: row => row.brand?.name || '-', meta: { label: 'Marka', variant: 'text', showFilter: true }, enableColumnFilter: true },
+      { header: 'Model', accessorFn: row => row.model?.name || '-', meta: { label: 'Model', variant: 'text', showFilter: true }, enableColumnFilter: true },
       { header: 'Renk', accessorFn: row => row.color?.name || '-', meta: { label: 'Renk', variant: 'text' }, enableColumnFilter: true },
       { header: 'Durum', accessorFn: row => safeAccess(row, ['status', 'name'], '-'), meta: { label: 'Durum', variant: 'text' } },
       { accessorKey: 'model_year', header: 'Yıl', meta: { label: 'Yıl', variant: 'number' }, enableColumnFilter: true, cell: ({ row }) => safeAccess(row.original, ['model_year'], '-') },
@@ -62,9 +62,9 @@ export const useVehicleTable = (vehicles: StrictVehicle[]): UseVehicleTableResul
       { accessorKey: 'vehicle_status_id', header: 'Durum ID', meta: { label: 'Durum ID', variant: 'number' }, cell: ({ row }) => safeAccess(row.original, ['vehicle_status_id'], '-') },
       { accessorKey: 'color_id', header: 'Renk ID', meta: { label: 'Renk ID', variant: 'number' }, cell: ({ row }) => safeAccess(row.original, ['color_id'], '-') },
       { accessorKey: 'vehicle_type_id', header: 'Araç Tipi ID', meta: { label: 'Araç Tipi ID', variant: 'number' }, cell: ({ row }) => safeAccess(row.original, ['vehicle_type_id'], '-') },
-      { header: 'Araç Tipi', accessorFn: row => safeAccess(row, ['vehicle_type', 'name'], '-'), meta: { label: 'Araç Tipi', variant: 'text' } },
+      { header: 'Araç Tipi', accessorFn: row => safeAccess(row, ['vehicle_type', 'name'], '-'), meta: { label: 'Araç Tipi', variant: 'text', colSpan: 2 } },
       { accessorKey: 'fuel_type_id', header: 'Yakıt Tipi ID', meta: { label: 'Yakıt Tipi ID', variant: 'number' }, cell: ({ row }) => safeAccess(row.original, ['fuel_type_id'], '-') },
-      { header: 'Yakıt Tipi', accessorFn: row => safeAccess(row, ['fuel_type', 'name'], '-'), meta: { label: 'Yakıt Tipi', variant: 'text' } },
+      { header: 'Yakıt Tipi', accessorFn: row => safeAccess(row, ['fuel_type', 'name'], '-'), meta: { label: 'Yakıt Tipi', variant: 'text', colSpan: 2 } },
       { accessorKey: 'engine_power_hp', header: 'Motor Gücü (HP)', meta: { label: 'Motor Gücü', variant: 'number', unit: 'hp' }, cell: ({ row }) => safeAccess(row.original, ['engine_power_hp'], '-') },
       { accessorKey: 'engine_volume_cc', header: 'Motor Hacmi (cc)', meta: { label: 'Motor Hacmi', variant: 'number', unit: 'cc' }, cell: ({ row }) => safeAccess(row.original, ['engine_volume_cc'], '-') },
       { accessorKey: 'engine_number', header: 'Motor No', meta: { label: 'Motor No', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['engine_number'], '-') },
@@ -94,6 +94,7 @@ export const useVehicleTable = (vehicles: StrictVehicle[]): UseVehicleTableResul
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    autoResetPageIndex: false,
     globalFilterFn: (row, _colId, value) => {
       const v = (value as string).toLowerCase();
       const chassis = typeof row.original.chassis_number === 'string' ? row.original.chassis_number : '';

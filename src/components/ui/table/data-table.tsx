@@ -68,76 +68,73 @@ export function DataTable<TData>({
 
 
   return (
-    <div className='flex flex-1 flex-col space-y-4'>
+    <div className='flex flex-col space-y-4'>
       {children}
-      <div className='relative flex flex-1'>
-        <div className='absolute inset-0 flex overflow-hidden rounded-lg border'>
-          <ScrollArea className='h-full w-full'>
-            <DndContext 
-              sensors={sensors} 
-              onDragEnd={handleDragEnd}
-              collisionDetection={closestCenter}
-              modifiers={[restrictToHorizontalAxis]}
-            >
-              <Table>
-                <TableHeader className='bg-muted sticky top-0 z-10'>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <SortableContext 
-                      key={headerGroup.id}
-                      items={headerGroup.headers.map(h => h.id)}
-                      strategy={horizontalListSortingStrategy}
-                    >
-                      <TableRow key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => (
-                          <DataTableDraggableHeader 
-                            key={header.id} 
-                            header={header}
-                          />
-                        ))}
-                      </TableRow>
-                    </SortableContext>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() && 'selected'}
-                        {...(getRowProps ? getRowProps(row) : {})}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell
-                            key={cell.id}
-                            style={{
-                              ...getCommonPinningStyles({ column: cell.column })
-                            }}
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
+      <ScrollArea className='rounded-lg border'>
+        <DndContext 
+          sensors={sensors} 
+          onDragEnd={handleDragEnd}
+          collisionDetection={closestCenter}
+          modifiers={[restrictToHorizontalAxis]}
+        >
+          <Table className="min-w-full table-auto">
+            <TableHeader className='bg-muted sticky top-0 z-10'>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <SortableContext 
+                  key={headerGroup.id}
+                  items={headerGroup.headers.map(h => h.id)}
+                  strategy={horizontalListSortingStrategy}
+                >
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <DataTableDraggableHeader 
+                        key={header.id} 
+                        header={header}
+                      />
+                    ))}
+                  </TableRow>
+                </SortableContext>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    {...(getRowProps ? getRowProps(row) : {})}
+                  >
+                    {row.getVisibleCells().map((cell) => (
                       <TableCell
-                        colSpan={table.getAllColumns().length}
-                        className='h-24 text-center'
+                        key={cell.id}
+                        className="py-4"
+                        style={{
+                          ...getCommonPinningStyles({ column: cell.column })
+                        }}
                       >
-                        No results.
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </DndContext>
-            <ScrollBar orientation='horizontal' />
-          </ScrollArea>
-        </div>
-      </div>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={table.getAllColumns().length}
+                    className='h-24 text-center'
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </DndContext>
+        <ScrollBar orientation='horizontal' />
+      </ScrollArea>
       <div className='flex flex-col gap-2.5'>
         <DataTablePagination table={table} />
         {actionBar &&

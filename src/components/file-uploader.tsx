@@ -216,7 +216,7 @@ export function FileUploader(props: FileUploaderProps) {
                   />
                 </div>
                 <p className='text-muted-foreground font-medium'>
-                  Drop the files here
+                  Dosyaları buraya sürükleyin
                 </p>
               </div>
             ) : (
@@ -229,14 +229,13 @@ export function FileUploader(props: FileUploaderProps) {
                 </div>
                 <div className='space-y-px'>
                   <p className='text-muted-foreground font-medium'>
-                    Drag {`'n'`} drop files here, or click to select files
+                    Dosyaları buraya sürükleyin, ya da tıklayarak dosya seçin
                   </p>
                   <p className='text-muted-foreground/70 text-sm'>
-                    You can upload
                     {maxFiles > 1
-                      ? ` ${maxFiles === Infinity ? 'multiple' : maxFiles}
-                      files (up to ${formatBytes(maxSize)} each)`
-                      : ` a file with ${formatBytes(maxSize)}`}
+                      ? ` ${maxFiles === Infinity ? 'bir veya daha fazla' : maxFiles}
+                      dosya (her dosya için maksimum ${formatBytes(maxSize)})`
+                      : `Dosya başına maksimum ${formatBytes(maxSize)}`}
                   </p>
                 </div>
               </div>

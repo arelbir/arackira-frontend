@@ -22,7 +22,12 @@ interface DataTableFiltersProps<TData> {
  * Gelişmiş filtreler için dialog bileşeni
  */
 function AdvancedFilterDialog<TData>({ advancedFilters }: { advancedFilters: Column<TData, unknown>[] }) {
-  const [open, setOpen] = useState(false);
+  if (advancedFilters.length === 0) {
+    return null;
+  }
+    const [open, setOpen] = useState(false);
+
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -38,14 +43,16 @@ function AdvancedFilterDialog<TData>({ advancedFilters }: { advancedFilters: Col
           <SheetTitle>Tüm Filtreler</SheetTitle>
         </SheetHeader>
         <div className='px-6 pt-4 pb-4'>
-          <div className='grid grid-cols-1 sm:grid-cols-2 gap-1'>
-            {advancedFilters.map((column) => 
-              column ? (
-                <div className="px-1 py-1" key={String(column.id)}>
-                  <DataTableToolbarFilter column={column} />
-                </div>
-              ) : null
-            )}
+           <div className='grid grid-cols-2 gap-x-2 gap-y-1'>
+             {advancedFilters.map((column) => (
+              <div
+                className='px-1 py-1'
+                style={{ gridColumn: `span ${((column.columnDef.meta || {}) as any).colSpan || 1} / span ${((column.columnDef.meta || {}) as any).colSpan || 1}` }}
+                key={String(column.id)}
+              >
+                <DataTableToolbarFilter column={column} />
+              </div>
+            ))}
           </div>
         </div>
       </SheetContent>
@@ -73,12 +80,17 @@ export function DataTableFilters<TData>({ table, filterVariants = [] }: DataTabl
   const coreFilters = filteredColumns.filter(col => 
     col && (col.columnDef as any).enableColumnFilter === true
   );
-  // Advanced filtreler: enableColumnFilter !== true olanlar
+  // Advanced filtreler: enableColumnFilter !== true olan ve bir filtre arayüzü (variant) olanlar
   const advancedFilters = filteredColumns.filter(col => 
-    col && !(col.columnDef as any).enableColumnFilter
+    col && (col.columnDef.meta as any)?.enableColumnFilter !== true && (col.columnDef.meta as any)?.variant
   );
   
-  const isFiltered = table.getState().columnFilters.length > 0;
+    const isFiltered = table.getState().columnFilters.length > 0;
+
+  // Sadece görünür olması istenen temel filtreleri ayıkla
+  const visibleCoreFilters = coreFilters.filter(
+    (col) => (col.columnDef.meta as any)?.showFilter === true
+  );
   
   const onReset = React.useCallback(() => {
     table.resetColumnFilters();
@@ -87,17 +99,23 @@ export function DataTableFilters<TData>({ table, filterVariants = [] }: DataTabl
   return (
     <div className='w-full rounded-xl border bg-card shadow-sm dark:bg-card/80 px-2 py-2 transition-colors'>
       <div className='flex items-center gap-2'>
-        <div className='w-full grid grid-cols-1 sm:grid-cols-2 gap-2'>
-          {coreFilters.map((column, index) => 
-            column ? (
-              <div className="px-1 py-1" key={String(column.id)}>
-                <DataTableToolbarFilter column={column} />
-              </div>
-            ) : null
-          )}
+        <div className='grow grid grid-cols-4 items-center gap-2'>
+           {visibleCoreFilters.map((column) => (
+            <div
+              className='px-1 py-1'
+              style={{ gridColumn: `span ${((column.columnDef.meta || {}) as any).colSpan || 1} / span ${((column.columnDef.meta || {}) as any).colSpan || 1}` }}
+              key={String(column.id)}
+            >
+              <DataTableToolbarFilter column={column} />
+            </div>
+          ))}
         </div>
-        <div className='mx-2 h-8 w-px bg-border' />
-        <AdvancedFilterDialog advancedFilters={advancedFilters} />
+        {advancedFilters.length > 0 && (
+          <>
+            <div className='mx-2 h-8 w-px bg-border' />
+            <AdvancedFilterDialog advancedFilters={advancedFilters} />
+          </>
+        )}
       </div>
       {isFiltered && (
         <div className='flex justify-end mt-2'>
