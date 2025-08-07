@@ -12,10 +12,11 @@ import { DataTableFilters } from './data-table-filters';
 
 interface DataTableToolbarProps<TData> extends React.ComponentProps<'div'> {
   table: Table<TData>;
-  resourceUrl?: string; // API endpoint ör: "/api/clients"
   onAction?: () => void; // İşlem sonrası çağrılacak callback (ör: SWR mutate)
   editBasePath?: string; // Düzenleme sayfası base path'i, ör: "/dashboard/clients"
   storageKey?: string; // Sütun görünürlük ayarları için saklama anahtarı
+  deleteAction?: (ids: (string | number)[]) => Promise<any>;
+  restoreAction?: (ids: (string | number)[]) => Promise<any>;
 }
 
 /**
@@ -31,21 +32,25 @@ export function DataTableToolbar<TData>({
   table,
   children,
   className,
-  resourceUrl,
   onAction,
   editBasePath,
   storageKey,
+  deleteAction,
+  restoreAction,
   ...props
 }: DataTableToolbarProps<TData>) {
   return (
     <div className={cn('w-full space-y-1', className)} {...props}>
       {/* Bulk actions slide-in toolbar */}
-      <DataTableBulkActionsSlideIn 
-        table={table}
-        resourceUrl={resourceUrl}
-        onAction={onAction}
-        editBasePath={editBasePath}
-      />
+      {(deleteAction && restoreAction) && (
+        <DataTableBulkActionsSlideIn 
+          table={table}
+          onAction={onAction}
+          editBasePath={editBasePath}
+          deleteAction={deleteAction}
+          restoreAction={restoreAction}
+        />
+      )}
       
       {/* Main toolbar */}
       <DataTableMainToolbar table={table} storageKey={storageKey}>

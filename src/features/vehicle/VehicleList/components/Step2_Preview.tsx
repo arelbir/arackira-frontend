@@ -5,6 +5,7 @@ import { Loader2, CheckCircle, XCircle, AlertTriangle, ArrowLeft, FileCheck2 } f
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { DataTable } from '@/components/ui/table/data-table';
 import { useReactTable, getCoreRowModel, getPaginationRowModel, type ColumnDef } from '@tanstack/react-table';
+import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PreviewRow } from '../useVehicleImportExport';
@@ -39,6 +40,7 @@ const DataPreviewTable: React.FC<{ data: PreviewRow[] }> = ({ data }) => {
       accessorFn: (row) => row.data[header],
       id: header,
       header: header,
+      size: 200, // Sütun genişliğini artır
     }));
 
     return [...staticColumns, ...dynamicColumns];
@@ -99,7 +101,16 @@ export const Step2_Preview: React.FC<{
   onCancel: () => void;
   isUploading: boolean;
 }> = ({ previewData, fileName, onConfirm, onCancel, isUploading }) => (
-  <div className="flex-1 flex flex-col min-h-0">
+  <div className="flex-1 flex flex-col min-h-0 gap-4">
+    <div className="flex justify-end space-x-2">
+        <Button variant="outline" onClick={onCancel} disabled={isUploading} size="lg">
+          Geri Dön ve Düzelt
+        </Button>
+        <Button onClick={onConfirm} disabled={isUploading || Object.values(previewData).every(data => data.filter(r => r.errors.length === 0).length === 0)} size="lg">
+        {isUploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+        {isUploading ? 'İçe Aktarılıyor...' : `Geçerli ${Object.values(previewData).reduce((acc, data) => acc + data.filter(r => r.errors.length === 0).length, 0)} Kaydı İçe Aktar`}
+        </Button>
+    </div>
     <Card className="flex-1 flex flex-col overflow-hidden">
       <CardHeader>
         <div className="flex justify-between items-center">
@@ -128,14 +139,6 @@ export const Step2_Preview: React.FC<{
         </Tabs>
       </CardContent>
     </Card>
-    <div className="flex-shrink-0 flex justify-end space-x-4 pt-4 border-t">
-      <Button variant="outline" onClick={onCancel} disabled={isUploading} className="h-12 px-6 text-base flex items-center gap-2">
-        <ArrowLeft size={16} /> Geri Dön ve Düzelt
-      </Button>
-      <Button onClick={onConfirm} disabled={isUploading || Object.values(previewData).every(data => data.filter(r => r.errors.length === 0).length === 0)} className="h-12 px-6 text-base flex items-center gap-2">
-        {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
-        {isUploading ? 'İçe Aktarılıyor...' : `Geçerli ${Object.values(previewData).reduce((acc, data) => acc + data.filter(r => r.errors.length === 0).length, 0)} Kaydı İçe Aktar`}
-      </Button>
-    </div>
+
   </div>
 );

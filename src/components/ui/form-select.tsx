@@ -35,7 +35,10 @@ export function FormSelectField<TForm extends FieldValues>({
             <SearchableSelect
               options={options}
               value={field.value ? String(field.value) : undefined}
-              onChange={(value) => field.onChange(value ? Number(value) : null)}
+              onChange={(value) => {
+                const numericValue = value ? Number(value) : null;
+                field.onChange(numericValue);
+              }}
               placeholder={placeholder}
               disabled={disabled}
             />

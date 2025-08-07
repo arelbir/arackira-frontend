@@ -43,15 +43,18 @@ export function DataTableToolbarFilter<TData>({
 
   // Kolon tipine göre uygun filtre bileşenini göster
   switch (columnMeta.variant) {
-    case 'text':
+    case 'text': {
+      const title = columnMeta.label ?? (typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id);
       return (
         <Input
-          placeholder={columnMeta.placeholder ?? columnMeta.label}
+          id={column.id}
+          placeholder={columnMeta.placeholder ?? title}
           value={(column.getFilterValue() as string) ?? ''}
           onChange={(event) => column.setFilterValue(event.target.value)}
           className='h-8 w-full'
         />
       );
+    }
     case 'date':
       return (
         <DataTableDateFilter column={column} title={columnMeta.label || column.columnDef.header?.toString() || ''} />

@@ -1,5 +1,18 @@
-import ContractList from '@/features/contract/contract-list';
+import ContractList from '@/features/contract/ContractList';
+import { PageHeader, PageHeaderDescription, PageHeaderHeading } from '@/components/page-header';
 
-export default function ContractsPage() {
-  return <ContractList />;
-}
+const ContractsPage = () => {
+  return (
+    <div className="h-full">
+      <PageHeader>
+        <PageHeaderHeading>Sözleşmeler</PageHeaderHeading>
+        <PageHeaderDescription>
+          Mevcut sözleşmeleri yönetin, yeni sözleşme ekleyin veya mevcutları düzenleyin.
+        </PageHeaderDescription>
+      </PageHeader>
+      <ContractList />
+    </div>
+  );
+};
+
+export default ContractsPage;

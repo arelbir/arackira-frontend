@@ -4,6 +4,7 @@ import React from 'react';
 
 import { useVehicleTable } from '../hooks/useVehicleTable';
 import { useVehicles } from '../hooks/useVehicles';
+import { VehicleService } from '../services/VehicleService';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/ui/table/data-table';
@@ -14,7 +15,7 @@ import { Edit, Eye, FilterX } from 'lucide-react';
 import Link from 'next/link';
 
 const VehicleList: React.FC = () => {
-  const { vehicles, loading, error } = useVehicles();
+  const { vehicles, loading, error, mutate } = useVehicles();
   const { table, setColumnFilters } = useVehicleTable(vehicles);
   const router = useRouter();
   
@@ -89,7 +90,15 @@ const VehicleList: React.FC = () => {
 
   return (
     <div className='flex h-full w-full flex-col p-8'>
-      <DataTableToolbar table={table} className="mb-3" storageKey="vehicles-table">
+            <DataTableToolbar 
+        table={table} 
+        className="mb-3" 
+        storageKey="vehicles-table"
+        onAction={() => mutate()} // Veriyi yenilemek için mutate'i onAction'a bağla
+        editBasePath="/dashboard/vehicles"
+        deleteAction={VehicleService.bulkDeleteVehicles}
+        restoreAction={VehicleService.bulkRestoreVehicles}
+      >
         <Button size="sm" variant="outline" className="mr-2" asChild>
           <Link href="/dashboard/vehicles/import">Toplu Araç Ekle</Link>
         </Button>

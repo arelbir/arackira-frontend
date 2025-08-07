@@ -20,6 +20,7 @@ export function DataTableDraggableHeader<TData, TValue>({
     <TableHead 
       ref={setNodeRef} 
       style={{ 
+        width: header.column.getSize(),
         transform: CSS.Transform.toString(transform), 
         transition,
         position: 'relative',

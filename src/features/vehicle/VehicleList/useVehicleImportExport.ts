@@ -11,6 +11,32 @@ export type PreviewRow = {
 
 const EXPECTED_SHEETS = ['Vehicles', 'Insurances', 'Inspections', 'HGS', 'GPS', 'UTTS'];
 
+// Excel'in seri numarasını JavaScript Date nesnesine dönüştürür.
+// Excel'de tarihler, 1900 tabanlı bir sistemde gün sayısı olarak saklanır.
+// JavaScript'te ise milisaniye tabanlıdır. Bu fonksiyon aradaki dönüşümü yapar.
+
+
+const formatDateToDDMMYYYY = (date: Date) => {
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0'); // Aylar 0'dan başlar
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+const convertExcelDate = (excelDate: number) => {
+  if (typeof excelDate !== 'number' || excelDate <= 0) {
+    return null; // veya excelDate'i doğrudan döndür
+  }
+  // Excel'in 1900 yılını artık yıl olarak yanlış hesaplamasından kaynaklanan hatayı düzeltir.
+  // Bu hata, 29 Şubat 1900'ü geçerli bir tarih olarak saymasından kaynaklanır.
+  const excelEpoch = new Date(1899, 11, 30);
+  const jsDate = new Date(excelEpoch.getTime() + excelDate * 86400000);
+  
+  // Saat dilimi farkını dengelemek için UTC tarihini kullan
+  return new Date(jsDate.getTime() + (jsDate.getTimezoneOffset() * 60000));
+};
+
 const downloadErrorReport = (errorReport: { buffer: string; filename: string }) => {
   const { buffer, filename } = errorReport;
   const byteCharacters = atob(buffer);
@@ -92,11 +118,28 @@ export const useVehicleImportExport = () => {
         for (const sheetName of EXPECTED_SHEETS) {
           if (foundSheets.includes(sheetName)) {
             const worksheet = workbook.Sheets[sheetName];
-            const jsonData: Record<string, any>[] = XLSX.utils.sheet_to_json(worksheet);
-            
-            if(jsonData.length === 0) continue; // Boş sayfaları atla
+            const jsonData: Record<string, any>[] = XLSX.utils.sheet_to_json(worksheet, { cellDates: true, raw: true } as any);
 
-            newPreviewData[sheetName] = jsonData.map((row, index) => ({
+            // Tarih alanlarını manuel olarak dönüştür
+            const processedData = jsonData.map(row => {
+              const newRow = { ...row };
+              Object.keys(newRow).forEach(key => {
+                const value = newRow[key];
+                if (value instanceof Date) {
+                  newRow[key] = formatDateToDDMMYYYY(value);
+                } else if (typeof value === 'number' && value > 25569) { // 25569 = 1970-01-01 in Excel serial
+                  const converted = convertExcelDate(value);
+                  if (converted) {
+                    newRow[key] = formatDateToDDMMYYYY(converted);
+                  }
+                }
+              });
+              return newRow;
+            });
+
+            if (processedData.length === 0) continue; // Boş sayfaları atla
+
+            newPreviewData[sheetName] = processedData.map((row, index) => ({
               rowIndex: index + 2, // Excel'de satırlar 1'den, başlık 1. satırda olduğu için +2
               data: row,
               errors: [], // Önizleme aşamasında hata olmaz, validasyon backend'de yapılır.

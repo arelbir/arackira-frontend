@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { useDeleteResource } from './useDeleteResource';
-import { useRestoreResource } from './useRestoreResource';
 
-interface BulkActionOptions {
-  resourceUrl: string;
+interface BulkActionOptions<T extends BulkActionRow[]> {
   onAction?: () => void;
+  deleteAction: (ids: (string | number)[]) => Promise<any>;
+  restoreAction: (ids: (string | number)[]) => Promise<any>;
 }
 
 interface BulkActionRow {
@@ -17,18 +16,20 @@ interface BulkActionRow {
 }
 
 /**
- * Toplu işlem mantığını soyutlayan hook
- * DRY prensibine uygun olarak benzer işlem kodlarını birleştirir
+ * Toplu işlem mantığını soyutlayan hook.
+ * API çağrılarını soyutlayarak, işlemleri gerçekleştirecek fonksiyonları parametre olarak alır.
  */
-export function useBulkActions({ resourceUrl, onAction }: BulkActionOptions) {
+export function useBulkActions<T extends BulkActionRow[]>({ 
+  onAction,
+  deleteAction,
+  restoreAction
+}: BulkActionOptions<T>) {
   const [isProcessing, setIsProcessing] = useState(false);
-  const { deleteResource } = useDeleteResource(resourceUrl);
-  const { restoreResource } = useRestoreResource(resourceUrl);
 
   /**
    * Generic bulk action işleyici
    */
-  const performBulkAction = async <T extends BulkActionRow[]>({
+  const performBulkAction = async ({
     rows,
     actionFn,
     filter,
@@ -36,12 +37,12 @@ export function useBulkActions({ resourceUrl, onAction }: BulkActionOptions) {
     errorMessage = 'İşlem başarısız oldu',
   }: {
     rows: T;
-    actionFn: (id: string | number) => Promise<any>;
+    actionFn: (ids: (string | number)[]) => Promise<any>;
     filter: (row: BulkActionRow) => boolean;
     successMessage: string;
     errorMessage?: string;
   }) => {
-    if (!rows.length || !resourceUrl) return;
+    if (!rows.length) return;
     
     try {
       setIsProcessing(true);
@@ -49,9 +50,10 @@ export function useBulkActions({ resourceUrl, onAction }: BulkActionOptions) {
       
       if (!filteredRows.length) return;
       
-      const promises = filteredRows.map(row => actionFn(row.id));
+      const ids = filteredRows.map(row => row.id);
       
-      await Promise.all(promises);
+      await actionFn(ids);
+
       toast.success(successMessage);
       onAction?.();
       return true;
@@ -66,10 +68,10 @@ export function useBulkActions({ resourceUrl, onAction }: BulkActionOptions) {
   /**
    * Toplu silme işlemi
    */
-  const handleBulkDelete = async <T extends BulkActionRow[]>(rows: T) => {
+  const handleBulkDelete = async (rows: T) => {
     return performBulkAction({
       rows,
-      actionFn: deleteResource,
+      actionFn: deleteAction,
       filter: row => !row.deleted_at,
       successMessage: `${rows.filter(row => !row.deleted_at).length} kayıt silindi`,
     });
@@ -78,10 +80,10 @@ export function useBulkActions({ resourceUrl, onAction }: BulkActionOptions) {
   /**
    * Toplu geri alma işlemi
    */
-  const handleBulkRestore = async <T extends BulkActionRow[]>(rows: T) => {
+  const handleBulkRestore = async (rows: T) => {
     return performBulkAction({
       rows,
-      actionFn: restoreResource,
+      actionFn: restoreAction,
       filter: row => Boolean(row.deleted_at),
       successMessage: `${rows.filter(row => Boolean(row.deleted_at)).length} kayıt geri alındı`,
     });
@@ -93,3 +95,5 @@ export function useBulkActions({ resourceUrl, onAction }: BulkActionOptions) {
     handleBulkRestore,
   };
 }
+
+

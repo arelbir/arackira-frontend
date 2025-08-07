@@ -3,6 +3,24 @@
 // Geliştirilmiş API İstekler için yardımcı fonksiyon
 // apiFetch ve apiRequest işlevlerini birleştiren versiyon
 // SSR uyumlu geliştirilmiş versiyon (token parametresi ekli)
+function removeNulls(obj: any): any {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(removeNulls).filter(item => item !== null);
+  }
+
+  const newObj: { [key: string]: any } = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key) && obj[key] !== null) {
+      newObj[key] = removeNulls(obj[key]);
+    }
+  }
+  return newObj;
+}
+
 export async function apiRequest<T>({
   url,
   method = 'GET',
@@ -89,7 +107,7 @@ export async function apiRequest<T>({
     const res = await fetch(fullUrl, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: body ? JSON.stringify(removeNulls(body)) : undefined,
       credentials: 'include', // Çerezleri gönderebilmek için
     });
 

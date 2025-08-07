@@ -116,6 +116,19 @@ export function BasicTab() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={control}
+                name="last_registration_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Son Tescil Tarihi</FormLabel>
+                    <FormControl>
+                      <DatePicker date={field.value} onChange={field.onChange} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </CardContent>
         </Card>

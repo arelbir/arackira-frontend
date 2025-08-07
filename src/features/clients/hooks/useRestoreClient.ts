@@ -1,10 +1,10 @@
 import useSWRMutation from 'swr/mutation';
-import { apiRequest } from '@/lib/api-client';
+import { restoreClient } from '../services/client.service';
 
 export function useRestoreClient() {
   const { trigger, isMutating, error } = useSWRMutation(
     '/api/clients',
-    (url: string, { arg }: { arg: number }) => apiRequest({ url: `/api/clients/${arg}/restore`, method: 'POST' })
+    (url: string, { arg }: { arg: number }) => restoreClient(arg)
   );
 
   return {

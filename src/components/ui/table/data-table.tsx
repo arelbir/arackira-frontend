@@ -109,6 +109,7 @@ export function DataTable<TData>({
                         key={cell.id}
                         className="py-4"
                         style={{
+                          width: cell.column.getSize(),
                           ...getCommonPinningStyles({ column: cell.column })
                         }}
                       >

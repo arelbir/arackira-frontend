@@ -85,4 +85,30 @@ export class VehicleService {
       throw error;
     }
   }
+
+  /**
+   * Toplu olarak araçları siler (soft delete).
+   * @param ids Silinecek araç ID'lerinin dizisi.
+   */
+  static async bulkDeleteVehicles(ids: (string | number)[]) {
+    return await apiRequest({
+      url: '/api/vehicles/bulk-delete',
+      method: 'POST',
+      body: { ids },
+      requiresAuth: true,
+    });
+  }
+
+  /**
+   * Toplu olarak silinmiş araçları geri yükler.
+   * @param ids Geri yüklenecek araç ID'lerinin dizisi.
+   */
+  static async bulkRestoreVehicles(ids: (string | number)[]) {
+    return await apiRequest({
+      url: '/api/vehicles/bulk-restore',
+      method: 'POST',
+      body: { ids },
+      requiresAuth: true,
+    });
+  }
 }

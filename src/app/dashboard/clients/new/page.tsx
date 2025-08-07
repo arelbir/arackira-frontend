@@ -1,27 +1,55 @@
 'use client';
+
+import Link from 'next/link';
+import { ArrowLeftIcon } from '@radix-ui/react-icons';
+
+import { ClientFormProvider, useClientFormContext } from '@/features/clients/context/ClientFormProvider';
 import { ClientForm } from '@/features/clients/components/ClientForm';
-import { useRouter } from 'next/navigation';
-import { useCreateClient } from '@/features/clients/hooks/useCreateClient';
-import { toast } from 'sonner';
+import { useClientMutation } from '@/features/clients/hooks/useClientMutation';
+import type { ClientCompanyFormValues } from '@/features/clients/schemas/client.schema';
 
-export default function NewClientPage() {
-  const router = useRouter();
-  const { createClient, isCreating } = useCreateClient();
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
-  async function handleSubmit(values: any) {
-    try {
-      await createClient(values);
-      toast.success('Müşteri başarıyla eklendi');
-      router.push('/dashboard/clients');
-    } catch (err: any) {
-      toast.error(err?.message || 'Müşteri kaydedilemedi');
-    }
-  }
+const NewClientForm = () => {
+  const { handleSubmit } = useClientFormContext();
+  const { createClient, isCreating } = useClientMutation();
+
+  const onSave = (data: ClientCompanyFormValues) => {
+    createClient(data);
+  };
 
   return (
-    <div className="p-8 space-y-6">
-      <h1 className="text-2xl font-bold mb-6">Yeni Müşteri Ekle</h1>
-      <ClientForm onSubmit={handleSubmit} disabled={isCreating} />
+    <div className="space-y-6">
+      <div className="sticky top-0 z-30 bg-background/95 p-4 mb-6 border-b">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="icon" aria-label="Geri dön">
+              <Link href="/dashboard/clients">
+                <ArrowLeftIcon />
+              </Link>
+            </Button>
+            <h1 className="text-lg font-semibold">Yeni Müşteri Ekle</h1>
+          </div>
+          <Button onClick={handleSubmit(onSave)} disabled={isCreating}>
+            {isCreating ? 'Kaydediliyor...' : 'Müşteriyi Kaydet'}
+          </Button>
+        </div>
+      </div>
+
+      <div className="p-4 md:p-0">
+        <Card className="p-6 mt-2 mb-10 shadow-lg w-full mx-auto">
+          <ClientForm />
+        </Card>
+      </div>
     </div>
+  );
+};
+
+export default function NewClientPage() {
+  return (
+    <ClientFormProvider>
+      <NewClientForm />
+    </ClientFormProvider>
   );
 }

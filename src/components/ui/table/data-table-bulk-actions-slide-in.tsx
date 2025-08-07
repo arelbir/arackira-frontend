@@ -11,10 +11,11 @@ import { Cross2Icon } from '@radix-ui/react-icons';
 
 interface DataTableBulkActionsSlideInProps<TData> {
   table: Table<TData>;
-  resourceUrl?: string;
   onAction?: () => void;
   editBasePath?: string;
   className?: string;
+  deleteAction: (ids: (string | number)[]) => Promise<any>;
+  restoreAction: (ids: (string | number)[]) => Promise<any>;
 }
 
 /**
@@ -23,20 +24,22 @@ interface DataTableBulkActionsSlideInProps<TData> {
  */
 export function DataTableBulkActionsSlideIn<TData>({
   table,
-  resourceUrl = '',
   onAction,
   editBasePath,
   className,
+  deleteAction,
+  restoreAction,
 }: DataTableBulkActionsSlideInProps<TData>) {
   const router = useRouter();
   
   // useBulkActions hook'u ile işlem mantığını soyutluyoruz
-  const { isProcessing, handleBulkDelete, handleBulkRestore } = useBulkActions({ 
-    resourceUrl, 
+  const { isProcessing, handleBulkDelete, handleBulkRestore } = useBulkActions({
+    deleteAction,
+    restoreAction,
     onAction: () => {
       onAction?.();
       table.resetRowSelection(); // İşlem sonrası seçimleri temizle
-    }
+    },
   });
 
   // Seçili satırları al ve tipini doğru şekilde belirt

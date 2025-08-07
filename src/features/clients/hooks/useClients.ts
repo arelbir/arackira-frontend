@@ -1,58 +1,27 @@
 'use client';
 import useSWR from 'swr';
+import { getClients } from '../services/client.service';
+import type { ClientCompany, ClientCompanyWithSubRows } from '../types';
 
-export interface ClientAddress {
-  id: number;
-  client_id: number;
-  type: string;
-  address: string;
-  city?: string;
-  country?: string;
-  postal_code?: string;
-  tax_number?: string;
-  created_at?: string;
-}
+type UseClientsParams = Record<string, any> & { includeDeleted?: boolean };
 
-export interface ClientCompany {
-  id: number;
-  company_name: string;
-  contact_person?: string;
-  email: string;
-  phone?: string;
-  parent_company_id?: number | null;
-  client_type_id?: number | null;
-  addresses?: ClientAddress[];
-  created_at?: string;
-  deleted_at?: string | null;
-}
-
-export interface ClientsResponse {
-  data: ClientCompany[];
-  total: number;
-}
-
-import { apiRequest } from '@/lib/api-client';
-
-export function useClients(params?: Record<string, any> & { includeDeleted?: boolean }) {
-  const fetcher = async (url: string): Promise<ClientsResponse | ClientCompany[]> => {
-    const response = await apiRequest({ url });
-    return response as ClientsResponse | ClientCompany[];
-  };
-
-  // Debug log for SWR data and error
+export function useClients(params?: UseClientsParams) {
   let queryParams = { ...params };
   if (!queryParams.includeDeleted) {
-    queryParams.deleted = 'false'; // Backend'de ?deleted=false ile silinmemişleri getir
+    queryParams.deleted = 'false';
   } else {
-    queryParams.deleted = 'any'; // Silinmişler dahil tümünü getir
+    queryParams.deleted = 'any';
   }
   delete queryParams.includeDeleted;
+
   const query = Object.keys(queryParams).length > 0 ? '?' + new URLSearchParams(queryParams).toString() : '';
-  const { data, error, isLoading, mutate } = useSWR(`/api/clients${query}`, fetcher);
-  // Hem array hem object response destekle
-  const clients = Array.isArray(data) ? data : data?.data ?? [];
+  const url = `/api/clients${query}`;
+
+  const { data, error, isLoading, mutate } = useSWR(url, () => getClients(url));
+
+  const clients: ClientCompanyWithSubRows[] = data || [];
   const total = Array.isArray(data) ? data.length : data?.total ?? 0;
-  console.log('[useClients] data:', data, 'error:', error);
+
   return {
     clients,
     total,
@@ -61,3 +30,4 @@ export function useClients(params?: Record<string, any> & { includeDeleted?: boo
     mutate,
   };
 }
+

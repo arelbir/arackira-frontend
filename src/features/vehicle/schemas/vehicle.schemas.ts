@@ -23,6 +23,7 @@ export const vehicleBaseSchema = z.object({
   chassis_number: z.string().nullable(),
   engine_number: z.string().optional().nullable(),
   first_registration_date: z.coerce.date().optional().nullable(),
+  last_registration_date: z.coerce.date().optional().nullable(),
   registration_document_number: z.string().optional().nullable(),
   vehicle_km: z.number().nullable(),
   next_maintenance_date: z.coerce.date().optional().nullable(),

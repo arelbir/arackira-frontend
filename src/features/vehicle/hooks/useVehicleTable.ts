@@ -69,6 +69,7 @@ export const useVehicleTable = (vehicles: StrictVehicle[]): UseVehicleTableResul
       { accessorKey: 'engine_volume_cc', header: 'Motor Hacmi (cc)', meta: { label: 'Motor Hacmi', variant: 'number', unit: 'cc' }, cell: ({ row }) => safeAccess(row.original, ['engine_volume_cc'], '-') },
       { accessorKey: 'engine_number', header: 'Motor No', meta: { label: 'Motor No', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['engine_number'], '-') },
       { accessorKey: 'first_registration_date', header: 'İlk Tescil', meta: { label: 'İlk Tescil', variant: 'date' }, cell: ({ getValue }) => formatDateTR(getValue()) },
+      { accessorKey: 'last_registration_date', header: 'Son Tescil', meta: { label: 'Son Tescil', variant: 'date' }, cell: ({ getValue }) => formatDateTR(getValue()) },
       { accessorKey: 'registration_document_number', header: 'Ruhsat No', meta: { label: 'Ruhsat No', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['registration_document_number'], '-') },
       { accessorKey: 'package', header: 'Paket', meta: { label: 'Paket', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['package'], '-') },
       { accessorKey: 'version', header: 'Versiyon', meta: { label: 'Versiyon', variant: 'text' }, cell: ({ row }) => safeAccess(row.original, ['version'], '-') },
